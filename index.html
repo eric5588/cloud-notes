@@ -632,7 +632,7 @@
       listEl.innerHTML = '<div class="loader"></div>';
 
       try {
-        const res = await fetch(`${API_URL}/repos/${state.owner}/${state.repo}/contents?ref=main`, {
+        const res = await fetch(`${API_URL}/repos/${state.owner}/${state.repo}/contents?ref=main&t=${Date.now()}`, {
           headers: { 'Authorization': `token ${state.token}`, 'Cache-Control': 'no-cache' }
         });
 
