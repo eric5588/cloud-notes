@@ -222,18 +222,18 @@
   <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <div class="login-box">
-      <div style="font-size: 40px; margin-bottom: 10px;">☁️</div>
-      <h1>Cloud Notes</h1>
-      <p>極限私有雲筆記系統</p>
-      <input type="password" id="inp-token" class="inp-field" placeholder="GitHub PAT (ghp_...)"
-        autocomplete="new-password">
-      <div style="display: flex; gap: 10px;">
-        <input type="text" id="inp-owner" class="inp-field" placeholder="User (eric5588)">
-        <input type="text" id="inp-repo" class="inp-field" placeholder="Repo (cloud-notes)">
+      <div style="font-size: 40px; margin-bottom: 20px;">🔒</div>
+      <h1>私人筆記空間</h1>
+      <p>請輸入存取密碼 (GitHub Token)</p>
+
+      <input type="password" id="inp-password" class="inp-field" placeholder="輸入密碼..." autocomplete="current-password">
+
+      <button class="btn-login" id="login-btn" onclick="attemptLogin()">進入系統</button>
+
+      <div style="margin-top: 20px;">
+        <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" class="help-text"
+          style="color:#aaa;">忘記密碼 (獲取新 Token)</a>
       </div>
-      <button class="btn-login" onclick="attemptLogin()">登入系統</button>
-      <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank"
-        style="margin-top:15px; font-size:12px; color:#2563eb;">沒有 Token? 點此生成 (需勾選 repo)</a>
     </div>
   </div>
 
@@ -275,51 +275,36 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
   <script>
     const CONFIG = { owner: localStorage.getItem('gh_owner'), repo: localStorage.getItem('gh_repo'), token: localStorage.getItem('gh_pat'), branch: 'main' };
-    let editorInstance = null, currentSha = null, isNewFile = false; // --- Login Logic ---
+    let editorInstance = null, currentSha = null, isNewFile = false;    // --- Login Logic ---
+    // Hardcoded config for convenience (Personal Use Only)
+    const DEFAULT_OWNER = 'eric5588';
+    const DEFAULT_REPO = 'cloud-notes';
+
     function checkLogin() {
-      if (CONFIG.token && CONFIG.owner && CONFIG.repo) {
+      // If we have a working token, auto-login
+      if (CONFIG.token) {
+        // Validation happens on first API call anyway
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(() => {
           document.getElementById('login-screen').style.display = 'none';
           document.getElementById('app-shell').style.opacity = '1';
         }, 300);
-      } else {
-        // Pre-fill if partial
-        if (CONFIG.owner) document.getElementById('inp-owner').value = CONFIG.owner;
-        if (CONFIG.repo) document.getElementById('inp-repo').value = CONFIG.repo;
       }
-    }
-
-    // Auto-clean inputs helper
-    function cleanInput(val) {
-      if (!val) return '';
-      // Remove URL parts if user pasted full URL
-      val = val.replace('https://github.com/', '').replace('https://', '');
-      // Remove trailing slashes
-      val = val.replace(/\/$/, '');
-      return val.trim();
     }
 
     window.attemptLogin = async function () {
-      const token = document.getElementById('inp-token').value.trim();
-      let owner = cleanInput(document.getElementById('inp-owner').value);
-      let repo = cleanInput(document.getElementById('inp-repo').value);
+      const inputVal = document.getElementById('inp-token').value.trim();
 
-      // Smart fix: if user put "user/repo" in owner field, split it
-      if (owner.includes('/')) {
-        const parts = owner.split('/');
-        owner = parts[0];
-        repo = parts[1];
-      }
-      // Smart fix: if user put "user/repo" in repo field, fix it
-      if (repo.includes('/')) {
-        const parts = repo.split('/');
-        if (parts[0] === owner) repo = parts[1];
-      }
+      if (!inputVal) return alert('請輸入密碼');
 
-      if (!token || !owner || !repo) return alert('請填寫完整資訊');
+      // Assume input is the Token
+      const token = inputVal;
+      const owner = DEFAULT_OWNER;
+      const repo = DEFAULT_REPO;
 
-      // Verify Token mostly by trying to fetch repo info
+      document.querySelector('.btn-login').innerText = '驗證中...';
+
+      // Verify Token
       try {
         const url = `https://api.github.com/repos/${owner}/${repo}`;
         const res = await fetch(url, {
@@ -330,14 +315,20 @@
           localStorage.setItem('gh_pat', token);
           localStorage.setItem('gh_owner', owner);
           localStorage.setItem('gh_repo', repo);
-          alert(`✅ 登入成功！\n連結至: ${owner}/${repo}`);
+
+          CONFIG.token = token;
+          CONFIG.owner = owner;
+          CONFIG.repo = repo;
+
+          alert(`🎉 歡迎回來，${owner}！`);
           location.reload();
         } else {
-          const err = await res.json();
-          alert(`❌ 驗證失敗 (HTTP ${res.status})\n請檢查 User/Repo 名稱是否正確？\n嘗試連線: ${url}\n錯誤訊息: ${err.message}`);
+          document.querySelector('.btn-login').innerText = '登入系統';
+          alert('❌ 密碼錯誤 (Token 無效)');
         }
       } catch (e) {
-        alert('網路錯誤: ' + e.message);
+        document.querySelector('.btn-login').innerText = '登入系統';
+        alert('連線錯誤: ' + e.message);
       }
     };
 
