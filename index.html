@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 
 <head>
   <meta charset="UTF-8">
-  <title>Personal Cloud Notes</title>
+  <title>個人雲端筆記</title>
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="description" content="Description">
+  <meta name="description" content="Personal Cloud Notes">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
-  <!-- Notion-like Theme (Vue Theme + Custom CSS) -->
+  <!-- Notion-like Theme -->
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
 
   <!-- Monaco Editor -->
@@ -16,214 +16,420 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
 
   <style>
-    /* Notion-like Styling */
+    /* -------------------------------------------------------------------------- */
+    /*                                Design System                               */
+    /* -------------------------------------------------------------------------- */
     :root {
       --theme-color: #2F3437;
-      /* Notion Black */
       --sidebar-width: 280px;
+      --bg-color: #ffffff;
+      --text-color: #37352f;
+      --accent-color: #2ea44f;
+      --modal-bg: rgba(15, 15, 15, 0.6);
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
-      background-color: #fff;
-      color: #37352f;
+      color: var(--text-color);
+      letter-spacing: -0.01em;
     }
 
-    .sidebar {
-      background-color: #F7F7F5;
-      /* Notion Sidebar Grey */
-      border-right: 1px solid #ECECEC;
-    }
+    /* -------------------------------------------------------------------------- */
+    /*                                Custom UI Elements                          */
+    /* -------------------------------------------------------------------------- */
 
-    .content {
-      padding-top: 40px;
-      max-width: 100% !important;
-      /* Full width */
-      margin: 0 auto;
-      padding-left: 40px;
-      padding-right: 40px;
-    }
-
-    .markdown-section {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    /* Floating Action Button for Edit */
-    #edit-btn {
+    /* Floating Header Actions */
+    .header-actions {
       position: fixed;
-      top: 20px;
+      top: 15px;
       right: 20px;
-      padding: 8px 16px;
-      background: #2ea44f;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
       z-index: 100;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      display: flex;
+      gap: 10px;
     }
 
-    #edit-btn:hover {
-      background: #2c974b;
-    }
-
-    #settings-btn {
-      position: fixed;
-      top: 20px;
-      right: 100px;
-      padding: 8px 16px;
-      background: #57606a;
-      color: white;
-      border: none;
-      border-radius: 6px;
+    .btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid transparent;
       cursor: pointer;
-      font-weight: 600;
-      z-index: 100;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    /* Editor Container Modal */
-    #editor-container {
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: white;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary:hover {
+      background-color: #2c974b;
+    }
+
+    .btn-secondary {
+      background-color: white;
+      color: var(--text-color);
+      border-color: #e0e0e0;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-secondary:hover {
+      background-color: #f7f7f5;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                                Login Modal                                 */
+    /* -------------------------------------------------------------------------- */
+    .modal-overlay {
       display: none;
       position: fixed;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(255, 255, 255, 1);
-      z-index: 1000;
+      right: 0;
+      bottom: 0;
+      background: var(--modal-bg);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
     }
 
-    #monaco-host {
+    .modal-card {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+    }
+
+    .input-group input {
       width: 100%;
-      height: calc(100% - 50px);
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+      /* Important for padding */
     }
 
-    .editor-toolbar {
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #888;
+      margin-top: 5px;
+      display: block;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                                Editor Modal                                */
+    /* -------------------------------------------------------------------------- */
+    #editor-container {
+      display: none;
+      /* Hidden by default */
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: white;
+      z-index: 1500;
+      display: none;
+      flex-direction: column;
+    }
+
+    .editor-header {
       height: 50px;
-      background: #f6f8fa;
-      border-bottom: 1px solid #d0d7de;
+      border-bottom: 1px solid #f0f0f0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 20px;
+      background: #fff;
     }
 
-    .btn {
-      padding: 5px 12px;
-      border-radius: 6px;
-      border: 1px solid;
-      cursor: pointer;
-      font-weight: 500;
+    .file-status {
+      font-size: 14px;
+      color: #666;
+      font-family: monospace;
     }
 
-    .btn-primary {
-      background-color: #2da44e;
-      color: white;
-      border-color: rgba(27, 31, 36, 0.15);
+    #monaco-host {
+      flex: 1;
+      overflow: hidden;
     }
 
-    .btn-secondary {
-      background-color: #f6f8fa;
-      color: #24292f;
-      border-color: rgba(27, 31, 36, 0.15);
+    /* -------------------------------------------------------------------------- */
+    /*                                Sidebar & Content                          */
+    /* -------------------------------------------------------------------------- */
+    .sidebar {
+      background-color: #F7F7F5;
+      padding-top: 20px;
+    }
+
+    .app-name-link {
+      display: none;
+      /* Hide default title */
+    }
+
+    /* New Note Button in Sidebar */
+    .new-note-btn {
+      margin: 10px 20px;
+      display: block;
+      text-align: center;
+      padding: 8px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      color: #333;
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .new-note-btn:hover {
+      background: #f0f0f0;
+      color: #000;
+      text-decoration: none !important;
+    }
+
+    .content {
+      padding-top: 60px;
+      /* Space for hidden header */
     }
   </style>
 </head>
 
 <body>
-  <div id="app"></div>
 
-  <!-- Buttons -->
-  <button id="edit-btn" onclick="openEditor()">編輯頁面</button>
-  <button id="settings-btn" onclick="promptToken()">設定</button>
+  <!-- App Container -->
+  <div id="app">載入中...</div>
 
-  <!-- Editor Modal -->
+  <!-- Header Buttons -->
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="window.location.hash = '#/new-note-' + Date.now()">+ 新增筆記</button>
+    <button class="btn btn-secondary" onclick="openEditor()" id="edit-btn">✎ 編輯</button>
+    <button class="btn btn-secondary" onclick="showLoginModal()">⚙ 設定</button>
+  </div>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-title">雲端筆記設定</div>
+
+      <div class="input-group">
+        <label>GitHub Token (PAT)</label>
+        <input type="password" id="input-token" placeholder="ghp_xxxxxxxxxxxx">
+        <a href="https://github.com/settings/tokens" target="_blank" class="help-text">取得 Token (需勾選 'repo' 權限)</a>
+      </div>
+
+      <div class="input-group">
+        <label>使用者名稱 (Owner)</label>
+        <input type="text" id="input-owner" placeholder="例如: eric5588">
+      </div>
+
+      <div class="input-group">
+        <label>倉庫名稱 (Repo)</label>
+        <input type="text" id="input-repo" placeholder="例如: cloud-notes">
+      </div>
+
+      <div style="text-align: right; margin-top: 20px;">
+        <button class="btn btn-secondary" onclick="closeLoginModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveLogin()">儲存並登入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor Container -->
   <div id="editor-container">
-    <div class="editor-toolbar">
-      <span id="file-path-display">正在編輯: ...</span>
-      <div>
+    <div class="editor-header">
+      <div class="file-status" id="editor-filename">Loading...</div>
+      <div style="display: flex; gap: 10px;">
         <button class="btn btn-secondary" onclick="closeEditor()">取消</button>
-        <button class="btn btn-primary" onclick="saveToGitHub()">儲存變更</button>
+        <button class="btn btn-primary" onclick="saveToGitHub()">儲存 (Ctrl+S)</button>
       </div>
     </div>
     <div id="monaco-host"></div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+
   <script>
-    // --- Configuration ---
-    // Note: User must fill these in via LocalStorage or Prompt
-    // REPO_OWNER and REPO_NAME could be auto-detected from URL if on GitHub Pages,
-    // or hardcoded below. Ideally, we ask user once.
+    // --------------------------------------------------------------------------
+    //                                CONFIG Logic                              
+    // --------------------------------------------------------------------------
     let CONFIG = {
-      owner: localStorage.getItem('gh_owner') || 'YOUR_USERNAME',
-      repo: localStorage.getItem('gh_repo') || 'YOUR_REPO',
+      owner: localStorage.getItem('gh_owner') || '',
+      repo: localStorage.getItem('gh_repo') || '',
       branch: 'main',
-      token: localStorage.getItem('gh_pat')
+      token: localStorage.getItem('gh_pat') || ''
     };
 
-    // --- Docsify Setup ---
+    function showLoginModal() {
+      document.getElementById('input-token').value = CONFIG.token;
+      document.getElementById('input-owner').value = CONFIG.owner;
+      document.getElementById('input-repo').value = CONFIG.repo;
+      document.getElementById('login-modal').style.display = 'flex';
+    }
+
+    function closeLoginModal() {
+      document.getElementById('login-modal').style.display = 'none';
+    }
+
+    function saveLogin() {
+      const token = document.getElementById('input-token').value.trim();
+      const owner = document.getElementById('input-owner').value.trim();
+      const repo = document.getElementById('input-repo').value.trim();
+
+      if (!token || !owner || !repo) {
+        alert('請填寫所有欄位');
+        return;
+      }
+
+      localStorage.setItem('gh_pat', token);
+      localStorage.setItem('gh_owner', owner);
+      localStorage.setItem('gh_repo', repo);
+
+      CONFIG.token = token;
+      CONFIG.owner = owner;
+      CONFIG.repo = repo;
+
+      closeLoginModal();
+      alert('設定已儲存！');
+      location.reload();
+    }
+
+    // Auto-show login if missing config
+    if (!CONFIG.token || !CONFIG.owner) {
+      setTimeout(showLoginModal, 1000);
+    }
+
+    // --------------------------------------------------------------------------
+    //                                DOCSIFY Setup                             
+    // --------------------------------------------------------------------------
     window.$docsify = {
-      name: '個人雲端筆記',
-      repo: '', // Disable default GitHub corner to use custom edit
+      name: '雲端筆記',
+      repo: '',
       loadSidebar: true,
       subMaxLevel: 3,
       auto2top: true,
       search: 'auto',
+      notFoundPage: false, // We handle 404 manually for "New Note" logic
       plugins: [
         function (hook, vm) {
+          hook.beforeEach(function (content) {
+            // Inject generic sidebar button hack via string replacement isn't ideal,
+            // better to manipulate DOM in doneEach or use sidebar.md
+            return content;
+          });
+
           hook.doneEach(function () {
-            // Update current file path for the editor
+            // Inject "New Note" into sidebar if not there
+            const sidebar = document.querySelector('.sidebar-nav');
+            if (sidebar && !document.querySelector('.new-note-btn')) {
+              const btn = document.createElement('a');
+              btn.className = 'new-note-btn';
+              btn.innerText = '+ 新增筆記';
+              btn.href = '#/Untitled-' + Date.now();
+              sidebar.insertBefore(btn, sidebar.firstChild);
+            }
+
+            // Update current file tracking
             window.currentFilePath = vm.route.file;
-            console.log("Current file:", window.currentFilePath);
+
+            // Check for 404 (Docsify renders "404 - Not found" text usually)
+            // But better logic: check if content element is essentially empty or has specific class
+            // Actually, we can check if file exists via API when entering Edit Mode.
+            // For now, let's assume if user clicks Edit on a 404 page, they want to create it.
           });
         }
       ]
     };
 
-    // --- Helpers ---
-    function promptToken() {
-      const token = prompt("請輸入 GitHub Personal Access Token (repo 權限):", CONFIG.token || '');
-      if (token) {
-        localStorage.setItem('gh_pat', token);
-        CONFIG.token = token;
-      }
-
-      const owner = prompt("GitHub 使用者名稱 (Owner):", CONFIG.owner);
-      if (owner) {
-        localStorage.setItem('gh_owner', owner);
-        CONFIG.owner = owner;
-      }
-
-      const repo = prompt("Repository 名稱:", CONFIG.repo);
-      if (repo) {
-        localStorage.setItem('gh_repo', repo);
-        CONFIG.repo = repo;
-      }
-
-      alert('設定已儲存！');
-    }
-
-    // --- Monaco Editor & GitHub API ---
+    // --------------------------------------------------------------------------
+    //                                EDITOR Logic                              
+    // --------------------------------------------------------------------------
     let editorInstance = null;
-
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
 
     window.openEditor = async function () {
       if (!CONFIG.token) {
-        alert("請先點擊設定按鈕配置您的 GitHub Token。");
+        showLoginModal();
         return;
       }
 
-      const toolbarTitle = document.getElementById('file-path-display');
-      toolbarTitle.innerText = `正在編輯: 載入中...`;
-
-      document.getElementById('editor-container').style.display = 'block';
-
-      // Fetch Content
       const path = window.currentFilePath;
+      document.getElementById('editor-container').style.display = 'flex';
+      document.getElementById('editor-filename').innerText = `正在編輯: ${path}`;
+
+      // Initialize Monaco first if needed
+      if (!editorInstance) {
+        await new Promise(resolve => require(['vs/editor/editor.main'], () => {
+          editorInstance = monaco.editor.create(document.getElementById('monaco-host'), {
+            value: 'Loading...',
+            language: 'markdown',
+            theme: 'vs-light',
+            wordWrap: 'on',
+            minimap: { enabled: false },
+            fontSize: 16,
+            lineHeight: 28,
+            padding: { top: 20, bottom: 20 },
+            automaticLayout: true
+          });
+
+          // Image Paste
+          editorInstance.getDomNode().addEventListener('paste', handleImagePaste);
+          // Ctrl+S to save
+          editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveToGitHub);
+
+          resolve();
+        }));
+      }
+
+      // Fetch Content (Check if exists)
       const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}?ref=${CONFIG.branch}`;
 
       try {
@@ -234,34 +440,21 @@
           }
         });
 
-        if (!response.ok) throw new Error('無法讀取檔案，確認檔案是否存在？');
-
-        const data = await response.json();
-        window.currentFileSha = data.sha; // Needed for update
-        const content = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
-
-        toolbarTitle.innerText = `正在編輯: ${path}`;
-
-        // Initialize Monaco if needed
-        require(['vs/editor/editor.main'], function () {
-          if (!editorInstance) {
-            editorInstance = monaco.editor.create(document.getElementById('monaco-host'), {
-              value: content,
-              language: 'markdown',
-              theme: 'vs-light', // Notion is light
-              wordWrap: 'on',
-              minimap: { enabled: false },
-              fontSize: 14
-            });
-
-            // Image Paste Handler
-            const editorDom = editorInstance.getDomNode();
-            editorDom.addEventListener('paste', handleImagePaste);
-
-          } else {
-            editorInstance.setValue(content);
-          }
-        });
+        if (response.status === 404) {
+          // NEW FILE MODE
+          window.isNewFile = true;
+          window.currentFileSha = null;
+          editorInstance.setValue(`# ${path.replace('.md', '').replace('/', '')}\n\n`);
+          document.getElementById('editor-filename').innerText = ` ✨ 新增筆記: ${path}`;
+        } else {
+          // EDIT MODE
+          if (!response.ok) throw new Error('讀取錯誤');
+          const data = await response.json();
+          window.isNewFile = false;
+          window.currentFileSha = data.sha;
+          const content = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
+          editorInstance.setValue(content);
+        }
       } catch (e) {
         alert(e.message);
         closeEditor();
@@ -270,25 +463,27 @@
 
     window.closeEditor = function () {
       document.getElementById('editor-container').style.display = 'none';
+      if (window.isNewFile) history.back();
     };
 
     window.saveToGitHub = async function () {
       const content = editorInstance.getValue();
-      // Base64 encode (handle unicode)
       const contentEncoded = btoa(new TextEncoder().encode(content).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-
       const path = window.currentFilePath;
+
       const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`;
 
-      const commitMsg = prompt("Commit 訊息:", `更新 ${path}`);
-      if (!commitMsg) return;
+      const commitMsg = window.isNewFile ? `Create ${path}` : `Update ${path}`;
 
       const body = {
         message: commitMsg,
         content: contentEncoded,
-        branch: CONFIG.branch,
-        sha: window.currentFileSha // Required for update
+        branch: CONFIG.branch
       };
+
+      if (!window.isNewFile && window.currentFileSha) {
+        body.sha = window.currentFileSha;
+      }
 
       try {
         const response = await fetch(url, {
@@ -301,9 +496,14 @@
         });
 
         if (response.ok) {
-          alert('儲存成功！頁面將在 3 秒後重新整理（GitHub Pages 更新可能會有 30 秒至 1 分鐘的延遲）。');
-          closeEditor();
-          setTimeout(() => location.reload(), 3000);
+          const data = await response.json();
+          window.currentFileSha = data.content.sha; // Update SHA
+          window.isNewFile = false;
+          alert('儲存成功！');
+          document.getElementById('editor-container').style.display = 'none';
+
+          // Wait a bit for GitHub Pages then reload
+          setTimeout(() => location.reload(), 2000);
         } else {
           const err = await response.json();
           alert('儲存失敗: ' + err.message);
@@ -313,7 +513,9 @@
       }
     };
 
-    // --- Image Paste Handler ---
+    // --------------------------------------------------------------------------
+    //                                IMAGE Logic                               
+    // --------------------------------------------------------------------------
     async function handleImagePaste(e) {
       const items = (e.clipboardData || e.originalEvent.clipboardData).items;
       for (let index in items) {
@@ -328,18 +530,15 @@
     }
 
     async function uploadImage(blob) {
-      if (!CONFIG.token) return;
-
       const reader = new FileReader();
       reader.readAsDataURL(blob);
       reader.onloadend = async function () {
         const base64data = reader.result.split(',')[1];
-        const filename = `images/pasted-${Date.now()}.png`;
-
-        // Upload to GitHub
+        const filename = `images/${Date.now()}.png`; // Simple timestamp name
         const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${filename}`;
 
         try {
+          // Should add loading indicator here
           const response = await fetch(url, {
             method: 'PUT',
             headers: {
@@ -355,17 +554,18 @@
 
           if (response.ok) {
             const data = await response.json();
-            // Insert Markdown link at cursor
             const position = editorInstance.getPosition();
-            const textToInsert = `![Image](${filename})`;
+            // Use raw.githubusercontent or relative path? Relative is safer for Docsify
+            // data.content.download_url is full URL. Let's use relative for portability.
+            const textToInsert = `\n![Image](${filename})\n`;
             editorInstance.executeEdits("", [{
               range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
               text: textToInsert,
               forceMoveMarkers: true
             }]);
-            console.log('Image uploaded:', data.content.download_url);
           } else {
             console.error('Image upload failed');
+            alert('圖片上傳失敗');
           }
         } catch (e) {
           console.error(e);
@@ -374,7 +574,6 @@
     }
   </script>
 
-  <!-- Docsify Scripts -->
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
 </body>
