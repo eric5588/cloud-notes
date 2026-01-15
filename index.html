@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
   <meta charset="UTF-8">
   <title>Cloud Notes v3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-  <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
-  
+  <link rel="stylesheet" data-name="vs/editor/editor.main"
+    href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
+
   <style>
     :root {
       --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -18,70 +20,203 @@
       --text-main: #1e293b;
       --sidebar-w: 260px;
     }
-    * { box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); margin: 0; height: 100vh; overflow: hidden; color: var(--text-main); }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      color: var(--text-main);
+    }
 
     /* Login Screen */
     #login-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 9999;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       transition: opacity 0.3s ease;
     }
+
     .login-box {
-      background: white; padding: 40px; border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
     }
+
     .inp-field {
-      width: 100%; padding: 12px 15px; margin-bottom: 15px;
-      border: 1px solid #eee; border-radius: 10px; background: #fafafa; font-size: 14px;
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      background: #fafafa;
+      font-size: 14px;
     }
+
     .btn-login {
-      width: 100%; padding: 12px; background: var(--primary-color); color: white;
-      border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
+      width: 100%;
+      padding: 12px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     /* App Shell */
-    #app-shell { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
+    #app-shell {
+      display: flex;
+      height: 100vh;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
     .sidebar-container {
-      width: var(--sidebar-w); background: rgba(255,255,255,0.7); backdrop-filter: blur(20px);
-      border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; padding: 20px;
+      width: var(--sidebar-w);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
     }
-    .brand { font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 10px; color: #333; margin-bottom: 20px; }
+
+    .brand {
+      font-weight: 700;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
     .new-btn {
-      background: var(--text-main); color: white; border: none; padding: 10px; width: 100%;
-      border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px;
+      background: var(--text-main);
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
     }
-    .docsify-sidebar-host { flex: 1; overflow-y: auto; }
-    .sidebar-toggle { display: none !important; }
-    aside.sidebar { position: static !important; width: 100% !important; background: transparent !important; border: none !important; padding: 0 !important; }
+
+    .docsify-sidebar-host {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-toggle {
+      display: none !important;
+    }
+
+    aside.sidebar {
+      position: static !important;
+      width: 100% !important;
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+    }
 
     .main-area {
-      flex: 1; position: relative; overflow-y: auto; background: white; margin: 15px;
-      border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+      flex: 1;
+      position: relative;
+      overflow-y: auto;
+      background: white;
+      margin: 15px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
     }
+
     .toolbar {
-      height: 60px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center;
-      justify-content: flex-end; padding: 0 30px; gap: 15px;
+      height: 60px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 30px;
+      gap: 15px;
     }
+
     .tool-btn {
-      background: transparent; border: 1px solid #eee; color: #555; padding: 6px 14px;
-      border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px;
+      background: transparent;
+      border: 1px solid #eee;
+      color: #555;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
     }
 
     /* Editor Overlay */
     #editor-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: white; z-index: 100; display: none; flex-direction: column;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
     }
+
     .editor-top {
-      height: 60px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
+      height: 60px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
     }
-    #monaco-host { flex: 1; overflow: hidden; }
-    #main { padding: 0 !important; width: 100%; }
-    .markdown-section { padding: 40px 60px !important; max-width: 1000px !important; }
+
+    #monaco-host {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #main {
+      padding: 0 !important;
+      width: 100%;
+    }
+
+    .markdown-section {
+      padding: 40px 60px !important;
+      max-width: 1000px !important;
+    }
   </style>
 </head>
+
 <body>
 
   <!-- LOGIN SCREEN -->
@@ -90,13 +225,15 @@
       <div style="font-size: 40px; margin-bottom: 10px;">☁️</div>
       <h1>Cloud Notes</h1>
       <p>極限私有雲筆記系統</p>
-      <input type="password" id="inp-token" class="inp-field" placeholder="GitHub PAT (ghp_...)" autocomplete="new-password">
+      <input type="password" id="inp-token" class="inp-field" placeholder="GitHub PAT (ghp_...)"
+        autocomplete="new-password">
       <div style="display: flex; gap: 10px;">
         <input type="text" id="inp-owner" class="inp-field" placeholder="User (eric5588)">
         <input type="text" id="inp-repo" class="inp-field" placeholder="Repo (cloud-notes)">
       </div>
       <button class="btn-login" onclick="attemptLogin()">登入系統</button>
-      <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" style="margin-top:15px; font-size:12px; color:#2563eb;">沒有 Token? 點此生成 (需勾選 repo)</a>
+      <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank"
+        style="margin-top:15px; font-size:12px; color:#2563eb;">沒有 Token? 點此生成 (需勾選 repo)</a>
     </div>
   </div>
 
@@ -105,8 +242,11 @@
     <div class="sidebar-container">
       <div class="brand"><i class="ri-cloud-windy-line"></i> Cloud Notes</div>
       <button class="new-btn" onclick="createNewNote()"><i class="ri-add-line"></i> 新增筆記</button>
-      <div class="docsify-sidebar-host"><nav class="app-nav"></nav></div>
-      <div style="margin-top: auto; font-size: 12px; color: #999; text-align: center; cursor: pointer;" onclick="logout()">登出系統</div>
+      <div class="docsify-sidebar-host">
+        <nav class="app-nav"></nav>
+      </div>
+      <div style="margin-top: auto; font-size: 12px; color: #999; text-align: center; cursor: pointer;"
+        onclick="logout()">登出系統</div>
     </div>
 
     <div class="main-area">
@@ -123,7 +263,8 @@
             <button class="tool-btn" onclick="triggerImageUpload()"><i class="ri-image-line"></i> 插入圖片</button>
             <input type="file" id="img-upload-hidden" style="display:none" onchange="handleFileSelect(this)">
             <button class="tool-btn" onclick="cancelEdit()">取消</button>
-            <button class="tool-btn" style="background:#ebf5ff; color:#2563eb; border:none;" onclick="saveFile()">儲存 (Ctrl+S)</button>
+            <button class="tool-btn" style="background:#ebf5ff; color:#2563eb; border:none;" onclick="saveFile()">儲存
+              (Ctrl+S)</button>
           </div>
         </div>
         <div id="monaco-host"></div>
@@ -134,38 +275,78 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
   <script>
     const CONFIG = { owner: localStorage.getItem('gh_owner'), repo: localStorage.getItem('gh_repo'), token: localStorage.getItem('gh_pat'), branch: 'main' };
-    let editorInstance = null, currentSha = null, isNewFile = false;
-
+    let editorInstance = null, currentSha = null, isNewFile = false; // --- Login Logic ---
     function checkLogin() {
-      if (CONFIG.token && CONFIG.owner) {
+      if (CONFIG.token && CONFIG.owner && CONFIG.repo) {
         document.getElementById('login-screen').style.opacity = '0';
-        setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-shell').style.opacity = '1'; }, 300);
+        setTimeout(() => {
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('app-shell').style.opacity = '1';
+        }, 300);
       } else {
-        if(CONFIG.owner) document.getElementById('inp-owner').value = CONFIG.owner;
-        if(CONFIG.repo) document.getElementById('inp-repo').value = CONFIG.repo;
+        // Pre-fill if partial
+        if (CONFIG.owner) document.getElementById('inp-owner').value = CONFIG.owner;
+        if (CONFIG.repo) document.getElementById('inp-repo').value = CONFIG.repo;
       }
     }
-    
-    window.attemptLogin = async function() {
+
+    // Auto-clean inputs helper
+    function cleanInput(val) {
+      if (!val) return '';
+      // Remove URL parts if user pasted full URL
+      val = val.replace('https://github.com/', '').replace('https://', '');
+      // Remove trailing slashes
+      val = val.replace(/\/$/, '');
+      return val.trim();
+    }
+
+    window.attemptLogin = async function () {
       const token = document.getElementById('inp-token').value.trim();
-      const owner = document.getElementById('inp-owner').value.trim();
-      const repo = document.getElementById('inp-repo').value.trim();
-      if(!token) return alert('請填寫 Token');
+      let owner = cleanInput(document.getElementById('inp-owner').value);
+      let repo = cleanInput(document.getElementById('inp-repo').value);
+
+      // Smart fix: if user put "user/repo" in owner field, split it
+      if (owner.includes('/')) {
+        const parts = owner.split('/');
+        owner = parts[0];
+        repo = parts[1];
+      }
+      // Smart fix: if user put "user/repo" in repo field, fix it
+      if (repo.includes('/')) {
+        const parts = repo.split('/');
+        if (parts[0] === owner) repo = parts[1];
+      }
+
+      if (!token || !owner || !repo) return alert('請填寫完整資訊');
+
+      // Verify Token mostly by trying to fetch repo info
       try {
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: { Authorization: `token ${token}` } });
-        if(res.ok) {
-          localStorage.setItem('gh_pat', token); localStorage.setItem('gh_owner', owner); localStorage.setItem('gh_repo', repo);
+        const url = `https://api.github.com/repos/${owner}/${repo}`;
+        const res = await fetch(url, {
+          headers: { Authorization: `token ${token}` }
+        });
+
+        if (res.ok) {
+          localStorage.setItem('gh_pat', token);
+          localStorage.setItem('gh_owner', owner);
+          localStorage.setItem('gh_repo', repo);
+          alert(`✅ 登入成功！\n連結至: ${owner}/${repo}`);
           location.reload();
-        } else alert('驗證失敗：Token 無效或 Repo 不存在');
-      } catch(e) { alert('網路錯誤'); }
+        } else {
+          const err = await res.json();
+          alert(`❌ 驗證失敗 (HTTP ${res.status})\n請檢查 User/Repo 名稱是否正確？\n嘗試連線: ${url}\n錯誤訊息: ${err.message}`);
+        }
+      } catch (e) {
+        alert('網路錯誤: ' + e.message);
+      }
     };
 
-    window.logout = function() { if(confirm('登出？')) { localStorage.clear(); location.reload(); } }
+    window.logout = function () { if (confirm('登出？')) { localStorage.clear(); location.reload(); } }
 
     window.$docsify = {
       name: ' ', repo: '', loadSidebar: true, auto2top: true, el: '#app', routerMode: 'hash',
       plugins: [
-        function(hook, vm) {
+        function (hook, vm) {
           hook.beforeEach((html, next) => {
             document.getElementById('current-file-label').innerText = vm.route.file;
             next(html);
@@ -173,30 +354,30 @@
           hook.doneEach(() => {
             const content = document.querySelector('.markdown-section');
             if (content && (content.innerText.includes('404 - Not found') || content.innerText.includes('not found'))) {
-               content.innerHTML = `<div style="text-align:center; padding: 50px;"><h2>📝 筆記不存在</h2><p>檔案尚未建立。</p><button class="btn-login" style="width:200px; margin:20px auto;" onclick="openEditor()">立即建立</button></div>`;
-               window.isNewFile = true;
+              content.innerHTML = `<div style="text-align:center; padding: 50px;"><h2>📝 筆記不存在</h2><p>檔案尚未建立。</p><button class="btn-login" style="width:200px; margin:20px auto;" onclick="openEditor()">立即建立</button></div>`;
+              window.isNewFile = true;
             } else { window.isNewFile = false; }
           });
         }
       ]
     };
 
-    window.createNewNote = function() {
+    window.createNewNote = function () {
       const name = prompt("輸入筆記檔名:", "Untitled-" + Date.now());
       if (name) window.location.hash = `#/${name}`;
     }
 
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
 
-    window.openEditor = async function() {
+    window.openEditor = async function () {
       const path = getCleanPath();
       document.getElementById('editor-overlay').style.display = 'flex';
       document.getElementById('edit-title').innerText = isNewFile ? `✨ 建立: ${path}` : `✎ 編輯: ${path}`;
-      
+
       if (!editorInstance) {
         await new Promise(r => require(['vs/editor/editor.main'], () => {
           editorInstance = monaco.editor.create(document.getElementById('monaco-host'), {
-            value: 'Loading...', language: 'markdown', theme: 'vs-light', wordWrap: 'on', fontSize: 16, minimap:{enabled:false}
+            value: 'Loading...', language: 'markdown', theme: 'vs-light', wordWrap: 'on', fontSize: 16, minimap: { enabled: false }
           });
           editorInstance.getDomNode().addEventListener('paste', handlePaste);
           editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveFile);
@@ -205,38 +386,43 @@
       }
 
       if (isNewFile) {
-        editorInstance.setValue(`# ${path.split('/').pop().replace('.md','')}\n\n`); currentSha = null;
+        editorInstance.setValue(`# ${path.split('/').pop().replace('.md', '')}\n\n`); currentSha = null;
       } else {
         try {
           const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}?ref=${CONFIG.branch}`, { headers: { Authorization: `token ${CONFIG.token}` } });
-          if(res.ok) {
+          if (res.ok) {
             const data = await res.json();
             currentSha = data.sha;
             editorInstance.setValue(new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0))));
           } else { editorInstance.setValue(`# ${path}\n\n`); currentSha = null; }
-        } catch(e) { }
+        } catch (e) { }
       }
     };
 
     window.cancelEdit = () => document.getElementById('editor-overlay').style.display = 'none';
 
-    window.saveFile = async function() {
+    window.saveFile = async function () {
       const path = getCleanPath();
       const content = editorInstance.getValue();
-      const encoded = btoa(new TextEncoder().encode(content).reduce((d,b)=>d+String.fromCharCode(b),''));
+      const encoded = btoa(new TextEncoder().encode(content).reduce((d, b) => d + String.fromCharCode(b), ''));
       const body = { message: isNewFile ? `Create ${path}` : `Update ${path}`, content: encoded, branch: CONFIG.branch };
       if (!isNewFile && currentSha) body.sha = currentSha;
 
+      const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`;
+
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`, {
+        const res = await fetch(url, {
           method: 'PUT', headers: { Authorization: `token ${CONFIG.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
         });
         if (res.ok) {
           const data = await res.json(); currentSha = data.content.sha; isNewFile = false; alert('儲存成功');
           document.getElementById('editor-overlay').style.display = 'none';
           setTimeout(() => location.reload(), 2000);
-        } else { alert('儲存失敗: ' + (await res.json()).message); }
-      } catch(e) { alert(e.message); }
+        } else {
+          const err = await res.json();
+          alert(`❌ 儲存失敗 (HTTP ${res.status})\n原因: ${err.message}\n\n目標 Repo: ${CONFIG.owner}/${CONFIG.repo}\n目標路徑: ${path}\n\n請嘗試「登出」並重新設定 Repostory 名稱。`);
+        }
+      } catch (e) { alert('連線錯誤: ' + e.message); }
     };
 
     function getCleanPath() {
@@ -250,24 +436,24 @@
     window.handleFileSelect = async (input) => { if (input.files[0]) await uploadImageFile(input.files[0]); };
     async function handlePaste(e) {
       const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      for (let item of items) { if (item.kind === 'file' && item.type.startsWith('image/')) { e.preventDefault(); await uploadImageFile(item.getAsFile()); }}
+      for (let item of items) { if (item.kind === 'file' && item.type.startsWith('image/')) { e.preventDefault(); await uploadImageFile(item.getAsFile()); } }
     }
     async function uploadImageFile(file) {
       const reader = new FileReader(); reader.readAsDataURL(file);
       reader.onloadend = async () => {
         const b64 = reader.result.split(',')[1]; const name = `images/${Date.now()}-${file.name || 'img.png'}`;
-        editorInstance.trigger('keyboard', 'type', {text: `![Uploading...](${name})`});
+        editorInstance.trigger('keyboard', 'type', { text: `![Uploading...](${name})` });
         try {
           const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${name}`, {
             method: 'PUT', headers: { Authorization: `token ${CONFIG.token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'Upload image', content: b64, branch: CONFIG.branch })
           });
           if (res.ok) {
-             const pos = editorInstance.getPosition();
-             // Ideally verify upload but for now assume success
-             alert('上傳成功！請稍後，GitHub 需要一點時間快取圖片。');
+            const pos = editorInstance.getPosition();
+            // Ideally verify upload but for now assume success
+            alert('上傳成功！請稍後，GitHub 需要一點時間快取圖片。');
           } else alert('上傳失敗');
-        } catch(e) {}
+        } catch (e) { }
       }
     }
 
@@ -276,4 +462,5 @@
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
 </body>
+
 </html>
