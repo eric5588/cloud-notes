@@ -1,0 +1,65 @@
+name: Deploy to Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write # Needed to commit summaries back
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # To see changes if we wanted to limit scope
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install python-frontmatter requests
+
+      - name: Run AI Summarizer
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: |
+          python scripts/ai_summary.py .
+
+      - name: Commit AI Changes
+        run: |
+          git config --global user.name 'AI Assistant'
+          git config --global user.email 'ai-bot@users.noreply.github.com'
+          # Check for changes
+          if [[ -n $(git status -s) ]]; then
+            git add .
+            git commit -m "docs: auto-generated AI summaries [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

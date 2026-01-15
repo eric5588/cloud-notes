@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Personal Cloud Notes</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Description">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  
+  <!-- Notion-like Theme (Vue Theme + Custom CSS) -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  
+  <!-- Monaco Editor -->
+  <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
+  
+  <style>
+    /* Notion-like Styling */
+    :root {
+      --theme-color: #2F3437; /* Notion Black */
+      --sidebar-width: 280px;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+      background-color: #fff;
+      color: #37352f;
+    }
+
+    .sidebar {
+      background-color: #F7F7F5; /* Notion Sidebar Grey */
+      border-right: 1px solid #ECECEC;
+    }
+
+    .content {
+      padding-top: 40px;
+      max-width: 100% !important; /* Full width */
+      margin: 0 auto;
+      padding-left: 40px;
+      padding-right: 40px;
+    }
+
+    .markdown-section {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Floating Action Button for Edit */
+    #edit-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 8px 16px;
+      background: #2ea44f;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      z-index: 100;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    #edit-btn:hover {
+      background: #2c974b;
+    }
+
+    #settings-btn {
+      position: fixed;
+      top: 20px;
+      right: 100px;
+      padding: 8px 16px;
+      background: #57606a;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      z-index: 100;
+    }
+
+    /* Editor Container Modal */
+    #editor-container {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255,255,255,1);
+      z-index: 1000;
+    }
+
+    #monaco-host {
+      width: 100%;
+      height: calc(100% - 50px);
+    }
+
+    .editor-toolbar {
+      height: 50px;
+      background: #f6f8fa;
+      border-bottom: 1px solid #d0d7de;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    .btn-primary {
+      background-color: #2da44e;
+      color: white;
+      border-color: rgba(27,31,36,0.15);
+    }
+    
+    .btn-secondary {
+      background-color: #f6f8fa;
+      color: #24292f;
+      border-color: rgba(27,31,36,0.15);
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- Buttons -->
+  <button id="edit-btn" onclick="openEditor()">Edit Page</button>
+  <button id="settings-btn" onclick="promptToken()">Settings</button>
+
+  <!-- Editor Modal -->
+  <div id="editor-container">
+    <div class="editor-toolbar">
+      <span id="file-path-display">Editing: ...</span>
+      <div>
+        <button class="btn btn-secondary" onclick="closeEditor()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveToGitHub()">Save Changes</button>
+      </div>
+    </div>
+    <div id="monaco-host"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+  <script>
+    // --- Configuration ---
+    // Note: User must fill these in via LocalStorage or Prompt
+    // REPO_OWNER and REPO_NAME could be auto-detected from URL if on GitHub Pages,
+    // or hardcoded below. Ideally, we ask user once.
+    let CONFIG = {
+      owner: localStorage.getItem('gh_owner') || 'YOUR_USERNAME',
+      repo: localStorage.getItem('gh_repo') || 'YOUR_REPO',
+      branch: 'main',
+      token: localStorage.getItem('gh_pat')
+    };
+
+    // --- Docsify Setup ---
+    window.$docsify = {
+      name: 'Cloud Notes',
+      repo: '', // Disable default GitHub corner to use custom edit
+      loadSidebar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      search: 'auto',
+      plugins: [
+        function(hook, vm) {
+          hook.doneEach(function() {
+            // Update current file path for the editor
+            window.currentFilePath = vm.route.file;
+            console.log("Current file:", window.currentFilePath);
+          });
+        }
+      ]
+    };
+
+    // --- Helpers ---
+    function promptToken() {
+      const token = prompt("Enter GitHub Personal Access Token (repo scope):", CONFIG.token || '');
+      if (token) {
+        localStorage.setItem('gh_pat', token);
+        CONFIG.token = token;
+      }
+      
+      const owner = prompt("GitHub Username (Owner):", CONFIG.owner);
+      if (owner) {
+        localStorage.setItem('gh_owner', owner);
+        CONFIG.owner = owner;
+      }
+
+      const repo = prompt("Repository Name:", CONFIG.repo);
+      if (repo) {
+        localStorage.setItem('gh_repo', repo);
+        CONFIG.repo = repo;
+      }
+      
+      alert('Settings Saved!');
+    }
+
+    // --- Monaco Editor & GitHub API ---
+    let editorInstance = null;
+
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+
+    window.openEditor = async function() {
+      if (!CONFIG.token) {
+        alert("Please click Settings to configure your GitHub Token first.");
+        return;
+      }
+
+      const toolbarTitle = document.getElementById('file-path-display');
+      toolbarTitle.innerText = `Editing: Loading...`;
+      
+      document.getElementById('editor-container').style.display = 'block';
+
+      // Fetch Content
+      const path = window.currentFilePath;
+      const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}?ref=${CONFIG.branch}`;
+      
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `token ${CONFIG.token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch file. Does it exist?');
+        
+        const data = await response.json();
+        window.currentFileSha = data.sha; // Needed for update
+        const content = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
+
+        toolbarTitle.innerText = `Editing: ${path}`;
+
+        // Initialize Monaco if needed
+        require(['vs/editor/editor.main'], function() {
+          if (!editorInstance) {
+            editorInstance = monaco.editor.create(document.getElementById('monaco-host'), {
+              value: content,
+              language: 'markdown',
+              theme: 'vs-light', // Notion is light
+              wordWrap: 'on',
+              minimap: { enabled: false },
+              fontSize: 14
+            });
+            
+            // Image Paste Handler
+            const editorDom = editorInstance.getDomNode();
+            editorDom.addEventListener('paste', handleImagePaste);
+            
+          } else {
+            editorInstance.setValue(content);
+          }
+        });
+      } catch (e) {
+        alert(e.message);
+        closeEditor();
+      }
+    };
+
+    window.closeEditor = function() {
+      document.getElementById('editor-container').style.display = 'none';
+    };
+
+    window.saveToGitHub = async function() {
+      const content = editorInstance.getValue();
+      // Base64 encode (handle unicode)
+      const contentEncoded = btoa(new TextEncoder().encode(content).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+      
+      const path = window.currentFilePath;
+      const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`;
+      
+      const commitMsg = prompt("Commit message:", `Update ${path}`);
+      if (!commitMsg) return;
+
+      const body = {
+        message: commitMsg,
+        content: contentEncoded,
+        branch: CONFIG.branch,
+        sha: window.currentFileSha // Required for update
+      };
+
+      try {
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${CONFIG.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (response.ok) {
+          alert('Saved! Page will reload in 3 seconds to reflect changes (GitHub Pages allows ~30s delay).');
+          closeEditor();
+          setTimeout(() => location.reload(), 3000);
+        } else {
+          const err = await response.json();
+          alert('Error saving: ' + err.message);
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      }
+    };
+
+    // --- Image Paste Handler ---
+    async function handleImagePaste(e) {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let index in items) {
+        const item = items[index];
+        if (item.kind === 'file' && item.type.includes('image/')) {
+          e.preventDefault();
+          const blob = item.getAsFile();
+          await uploadImage(blob);
+          return;
+        }
+      }
+    }
+
+    async function uploadImage(blob) {
+      if (!CONFIG.token) return;
+      
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onloadend = async function() {
+        const base64data = reader.result.split(',')[1];
+        const filename = `images/pasted-${Date.now()}.png`;
+
+        // Upload to GitHub
+        const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${filename}`;
+        
+        try {
+          const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `token ${CONFIG.token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              message: `Upload image ${filename}`,
+              content: base64data,
+              branch: CONFIG.branch
+            })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Insert Markdown link at cursor
+            const position = editorInstance.getPosition();
+            const textToInsert = `![Image](${filename})`;
+            editorInstance.executeEdits("", [{ 
+              range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+              text: textToInsert,
+              forceMoveMarkers: true 
+            }]);
+            console.log('Image uploaded:', data.content.download_url);
+          } else {
+            console.error('Image upload failed');
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  </script>
+  
+  <!-- Docsify Scripts -->
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+</body>
+</html>
