@@ -363,7 +363,7 @@
         const repo = 'cloud-notes'; // Default standard repo name
 
         // 2. Check/Create Repo (Optional, but let's check existence)
-        btn.innerText = `連線至 ${owner}/${repo}...`;
+        btn.innerText = `驗證成功，正在進入系統...`;
         const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
           headers: { Authorization: `token ${token}` }
         });
@@ -459,6 +459,50 @@
       document.getElementById('draft-status').style.display = 'none';
     }
 
+    // --- Sidebar Logic ---
+    async function addToSidebar(filename) {
+      const sidebarPath = '_sidebar.md';
+      const cleanName = filename.replace('.md', '');
+      const linkEntry = `* [${cleanName}](${filename})\n`;
+
+      try {
+        // 1. Get current sidebar
+        let content = '';
+        let sha = null;
+        const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${sidebarPath}`, {
+          headers: { Authorization: `token ${CONFIG.token}` }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          content = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
+          sha = data.sha;
+        }
+
+        // 2. Append if not exists
+        if (!content.includes(`](${filename})`)) {
+          content += linkEntry;
+          // 3. Save back
+          const encoded = btoa(new TextEncoder().encode(content).reduce((d, b) => d + String.fromCharCode(b), ''));
+          const body = {
+            message: `Add ${filename} to sidebar`,
+            content: encoded,
+            branch: 'main'
+          };
+          if (sha) body.sha = sha;
+
+          await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${sidebarPath}`, {
+            method: 'PUT',
+            headers: { Authorization: `token ${CONFIG.token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+          console.log('Sidebar updated');
+        }
+      } catch (e) {
+        console.error('Sidebar update failed', e);
+      }
+    }
+
     window.saveFile = async function () {
       const path = getCleanPath();
       const content = editorInstance.getValue();
@@ -470,21 +514,36 @@
         const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`, {
           method: 'PUT', headers: { Authorization: `token ${CONFIG.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
         });
+
         if (res.ok) {
-          const data = await res.json(); currentSha = data.content.sha; isNewFile = false;
-          localStorage.removeItem('draft_' + path); // Clear draft
+          const data = await res.json();
+          currentSha = data.content.sha;
+
+          if (isNewFile) {
+            await addToSidebar(path); // Auto-update sidebar
+            isNewFile = false;
+            alert('✅ 新筆記已建立！\n側邊欄將在 1-2 分鐘後更新 (GitHub Pages 部署延遲)。');
+          } else {
+            alert('儲存成功！');
+          }
+
+          localStorage.removeItem('draft_' + path);
           document.getElementById('draft-status').style.display = 'none';
-          alert('儲存成功');
           document.getElementById('editor-overlay').style.display = 'none';
-          setTimeout(() => location.reload(), 2000);
-        } else { alert('儲存失敗: ' + (await res.json()).message); }
+
+          // Don't reload immediately to avoid 404, just stay or redirect to home?
+          // Let's reload to trigger docsify fetch, but user knows about delay now.
+          setTimeout(() => location.reload(), 2000); // 2s delay
+
+        } else {
+          alert('儲存失敗: ' + (await res.json()).message);
+        }
       } catch (e) { alert(e.message); }
     };
 
     function getCleanPath() {
       let path = location.hash.replace('#/', '').split('?')[0];
       if (!path) path = 'README.md';
-      if (!path.endsWith('.md')) path += '.md';
       return path;
     }
 
