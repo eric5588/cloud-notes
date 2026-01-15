@@ -1,581 +1,279 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-
 <head>
   <meta charset="UTF-8">
-  <title>個人雲端筆記</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-  <meta name="description" content="Personal Cloud Notes">
+  <title>Cloud Notes v3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-
-  <!-- Notion-like Theme -->
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-
-  <!-- Monaco Editor -->
-  <link rel="stylesheet" data-name="vs/editor/editor.main"
-    href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
-
+  <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
+  
   <style>
-    /* -------------------------------------------------------------------------- */
-    /*                                Design System                               */
-    /* -------------------------------------------------------------------------- */
     :root {
-      --theme-color: #2F3437;
-      --sidebar-width: 280px;
-      --bg-color: #ffffff;
-      --text-color: #37352f;
-      --accent-color: #2ea44f;
-      --modal-bg: rgba(15, 15, 15, 0.6);
+      --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --primary-color: #2563eb;
+      --text-main: #1e293b;
+      --sidebar-w: 260px;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-gradient); margin: 0; height: 100vh; overflow: hidden; color: var(--text-main); }
+
+    /* Login Screen */
+    #login-screen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 9999;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.3s ease;
+    }
+    .login-box {
+      background: white; padding: 40px; border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center;
+    }
+    .inp-field {
+      width: 100%; padding: 12px 15px; margin-bottom: 15px;
+      border: 1px solid #eee; border-radius: 10px; background: #fafafa; font-size: 14px;
+    }
+    .btn-login {
+      width: 100%; padding: 12px; background: var(--primary-color); color: white;
+      border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
-      color: var(--text-color);
-      letter-spacing: -0.01em;
+    /* App Shell */
+    #app-shell { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
+    .sidebar-container {
+      width: var(--sidebar-w); background: rgba(255,255,255,0.7); backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; padding: 20px;
+    }
+    .brand { font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 10px; color: #333; margin-bottom: 20px; }
+    .new-btn {
+      background: var(--text-main); color: white; border: none; padding: 10px; width: 100%;
+      border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px;
+    }
+    .docsify-sidebar-host { flex: 1; overflow-y: auto; }
+    .sidebar-toggle { display: none !important; }
+    aside.sidebar { position: static !important; width: 100% !important; background: transparent !important; border: none !important; padding: 0 !important; }
+
+    .main-area {
+      flex: 1; position: relative; overflow-y: auto; background: white; margin: 15px;
+      border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+    }
+    .toolbar {
+      height: 60px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center;
+      justify-content: flex-end; padding: 0 30px; gap: 15px;
+    }
+    .tool-btn {
+      background: transparent; border: 1px solid #eee; color: #555; padding: 6px 14px;
+      border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px;
     }
 
-    /* -------------------------------------------------------------------------- */
-    /*                                Custom UI Elements                          */
-    /* -------------------------------------------------------------------------- */
-
-    /* Floating Header Actions */
-    .header-actions {
-      position: fixed;
-      top: 15px;
-      right: 20px;
-      z-index: 100;
-      display: flex;
-      gap: 10px;
+    /* Editor Overlay */
+    #editor-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: white; z-index: 100; display: none; flex-direction: column;
     }
-
-    .btn {
-      padding: 6px 12px;
-      border-radius: 4px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 14px;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .editor-top {
+      height: 60px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
     }
-
-    .btn-primary {
-      background-color: var(--accent-color);
-      color: white;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-primary:hover {
-      background-color: #2c974b;
-    }
-
-    .btn-secondary {
-      background-color: white;
-      color: var(--text-color);
-      border-color: #e0e0e0;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-
-    .btn-secondary:hover {
-      background-color: #f7f7f5;
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                                Login Modal                                 */
-    /* -------------------------------------------------------------------------- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--modal-bg);
-      backdrop-filter: blur(4px);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-card {
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-      animation: slideUp 0.3s ease;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .modal-title {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .input-group {
-      margin-bottom: 15px;
-    }
-
-    .input-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #666;
-      text-transform: uppercase;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      box-sizing: border-box;
-      /* Important for padding */
-    }
-
-    .input-group input:focus {
-      outline: none;
-      border-color: var(--accent-color);
-    }
-
-    .help-text {
-      font-size: 12px;
-      color: #888;
-      margin-top: 5px;
-      display: block;
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                                Editor Modal                                */
-    /* -------------------------------------------------------------------------- */
-    #editor-container {
-      display: none;
-      /* Hidden by default */
-      position: fixed;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      background: white;
-      z-index: 1500;
-      display: none;
-      flex-direction: column;
-    }
-
-    .editor-header {
-      height: 50px;
-      border-bottom: 1px solid #f0f0f0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      background: #fff;
-    }
-
-    .file-status {
-      font-size: 14px;
-      color: #666;
-      font-family: monospace;
-    }
-
-    #monaco-host {
-      flex: 1;
-      overflow: hidden;
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                                Sidebar & Content                          */
-    /* -------------------------------------------------------------------------- */
-    .sidebar {
-      background-color: #F7F7F5;
-      padding-top: 20px;
-    }
-
-    .app-name-link {
-      display: none;
-      /* Hide default title */
-    }
-
-    /* New Note Button in Sidebar */
-    .new-note-btn {
-      margin: 10px 20px;
-      display: block;
-      text-align: center;
-      padding: 8px;
-      background: white;
-      border: 1px solid #e0e0e0;
-      border-radius: 4px;
-      color: #333;
-      text-decoration: none;
-      font-size: 13px;
-      transition: all 0.2s;
-    }
-
-    .new-note-btn:hover {
-      background: #f0f0f0;
-      color: #000;
-      text-decoration: none !important;
-    }
-
-    .content {
-      padding-top: 60px;
-      /* Space for hidden header */
-    }
+    #monaco-host { flex: 1; overflow: hidden; }
+    #main { padding: 0 !important; width: 100%; }
+    .markdown-section { padding: 40px 60px !important; max-width: 1000px !important; }
   </style>
 </head>
-
 <body>
 
-  <!-- App Container -->
-  <div id="app">載入中...</div>
-
-  <!-- Header Buttons -->
-  <div class="header-actions">
-    <button class="btn btn-primary" onclick="window.location.hash = '#/new-note-' + Date.now()">+ 新增筆記</button>
-    <button class="btn btn-secondary" onclick="openEditor()" id="edit-btn">✎ 編輯</button>
-    <button class="btn btn-secondary" onclick="showLoginModal()">⚙ 設定</button>
-  </div>
-
-  <!-- Login Modal -->
-  <div id="login-modal" class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-title">雲端筆記設定</div>
-
-      <div class="input-group">
-        <label>GitHub Token (PAT)</label>
-        <input type="password" id="input-token" placeholder="ghp_xxxxxxxxxxxx">
-        <a href="https://github.com/settings/tokens" target="_blank" class="help-text">取得 Token (需勾選 'repo' 權限)</a>
-      </div>
-
-      <div class="input-group">
-        <label>使用者名稱 (Owner)</label>
-        <input type="text" id="input-owner" placeholder="例如: eric5588">
-      </div>
-
-      <div class="input-group">
-        <label>倉庫名稱 (Repo)</label>
-        <input type="text" id="input-repo" placeholder="例如: cloud-notes">
-      </div>
-
-      <div style="text-align: right; margin-top: 20px;">
-        <button class="btn btn-secondary" onclick="closeLoginModal()">取消</button>
-        <button class="btn btn-primary" onclick="saveLogin()">儲存並登入</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Editor Container -->
-  <div id="editor-container">
-    <div class="editor-header">
-      <div class="file-status" id="editor-filename">Loading...</div>
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div style="font-size: 40px; margin-bottom: 10px;">☁️</div>
+      <h1>Cloud Notes</h1>
+      <p>極限私有雲筆記系統</p>
+      <input type="password" id="inp-token" class="inp-field" placeholder="GitHub PAT (ghp_...)" autocomplete="new-password">
       <div style="display: flex; gap: 10px;">
-        <button class="btn btn-secondary" onclick="closeEditor()">取消</button>
-        <button class="btn btn-primary" onclick="saveToGitHub()">儲存 (Ctrl+S)</button>
+        <input type="text" id="inp-owner" class="inp-field" placeholder="User (eric5588)">
+        <input type="text" id="inp-repo" class="inp-field" placeholder="Repo (cloud-notes)">
       </div>
+      <button class="btn-login" onclick="attemptLogin()">登入系統</button>
+      <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" style="margin-top:15px; font-size:12px; color:#2563eb;">沒有 Token? 點此生成 (需勾選 repo)</a>
     </div>
-    <div id="monaco-host"></div>
   </div>
 
-  <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+  <!-- APP SHELL -->
+  <div id="app-shell">
+    <div class="sidebar-container">
+      <div class="brand"><i class="ri-cloud-windy-line"></i> Cloud Notes</div>
+      <button class="new-btn" onclick="createNewNote()"><i class="ri-add-line"></i> 新增筆記</button>
+      <div class="docsify-sidebar-host"><nav class="app-nav"></nav></div>
+      <div style="margin-top: auto; font-size: 12px; color: #999; text-align: center; cursor: pointer;" onclick="logout()">登出系統</div>
+    </div>
 
+    <div class="main-area">
+      <div class="toolbar">
+        <span id="current-file-label" style="margin-right: auto; font-size: 14px; color: #999;">讀取中...</span>
+        <button class="tool-btn" onclick="openEditor()"><i class="ri-edit-line"></i> 編輯</button>
+      </div>
+      <div id="app"></div>
+
+      <div id="editor-overlay">
+        <div class="editor-top">
+          <div style="font-weight: 600;" id="edit-title">編輯模式</div>
+          <div style="display: flex; gap: 10px;">
+            <button class="tool-btn" onclick="triggerImageUpload()"><i class="ri-image-line"></i> 插入圖片</button>
+            <input type="file" id="img-upload-hidden" style="display:none" onchange="handleFileSelect(this)">
+            <button class="tool-btn" onclick="cancelEdit()">取消</button>
+            <button class="tool-btn" style="background:#ebf5ff; color:#2563eb; border:none;" onclick="saveFile()">儲存 (Ctrl+S)</button>
+          </div>
+        </div>
+        <div id="monaco-host"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
   <script>
-    // --------------------------------------------------------------------------
-    //                                CONFIG Logic                              
-    // --------------------------------------------------------------------------
-    let CONFIG = {
-      owner: localStorage.getItem('gh_owner') || '',
-      repo: localStorage.getItem('gh_repo') || '',
-      branch: 'main',
-      token: localStorage.getItem('gh_pat') || ''
+    const CONFIG = { owner: localStorage.getItem('gh_owner'), repo: localStorage.getItem('gh_repo'), token: localStorage.getItem('gh_pat'), branch: 'main' };
+    let editorInstance = null, currentSha = null, isNewFile = false;
+
+    function checkLogin() {
+      if (CONFIG.token && CONFIG.owner) {
+        document.getElementById('login-screen').style.opacity = '0';
+        setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-shell').style.opacity = '1'; }, 300);
+      } else {
+        if(CONFIG.owner) document.getElementById('inp-owner').value = CONFIG.owner;
+        if(CONFIG.repo) document.getElementById('inp-repo').value = CONFIG.repo;
+      }
+    }
+    
+    window.attemptLogin = async function() {
+      const token = document.getElementById('inp-token').value.trim();
+      const owner = document.getElementById('inp-owner').value.trim();
+      const repo = document.getElementById('inp-repo').value.trim();
+      if(!token) return alert('請填寫 Token');
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: { Authorization: `token ${token}` } });
+        if(res.ok) {
+          localStorage.setItem('gh_pat', token); localStorage.setItem('gh_owner', owner); localStorage.setItem('gh_repo', repo);
+          location.reload();
+        } else alert('驗證失敗：Token 無效或 Repo 不存在');
+      } catch(e) { alert('網路錯誤'); }
     };
 
-    function showLoginModal() {
-      document.getElementById('input-token').value = CONFIG.token;
-      document.getElementById('input-owner').value = CONFIG.owner;
-      document.getElementById('input-repo').value = CONFIG.repo;
-      document.getElementById('login-modal').style.display = 'flex';
-    }
+    window.logout = function() { if(confirm('登出？')) { localStorage.clear(); location.reload(); } }
 
-    function closeLoginModal() {
-      document.getElementById('login-modal').style.display = 'none';
-    }
-
-    function saveLogin() {
-      const token = document.getElementById('input-token').value.trim();
-      const owner = document.getElementById('input-owner').value.trim();
-      const repo = document.getElementById('input-repo').value.trim();
-
-      if (!token || !owner || !repo) {
-        alert('請填寫所有欄位');
-        return;
-      }
-
-      localStorage.setItem('gh_pat', token);
-      localStorage.setItem('gh_owner', owner);
-      localStorage.setItem('gh_repo', repo);
-
-      CONFIG.token = token;
-      CONFIG.owner = owner;
-      CONFIG.repo = repo;
-
-      closeLoginModal();
-      alert('設定已儲存！');
-      location.reload();
-    }
-
-    // Auto-show login if missing config
-    if (!CONFIG.token || !CONFIG.owner) {
-      setTimeout(showLoginModal, 1000);
-    }
-
-    // --------------------------------------------------------------------------
-    //                                DOCSIFY Setup                             
-    // --------------------------------------------------------------------------
     window.$docsify = {
-      name: '雲端筆記',
-      repo: '',
-      loadSidebar: true,
-      subMaxLevel: 3,
-      auto2top: true,
-      search: 'auto',
-      notFoundPage: false, // We handle 404 manually for "New Note" logic
+      name: ' ', repo: '', loadSidebar: true, auto2top: true, el: '#app', routerMode: 'hash',
       plugins: [
-        function (hook, vm) {
-          hook.beforeEach(function (content) {
-            // Inject generic sidebar button hack via string replacement isn't ideal,
-            // better to manipulate DOM in doneEach or use sidebar.md
-            return content;
+        function(hook, vm) {
+          hook.beforeEach((html, next) => {
+            document.getElementById('current-file-label').innerText = vm.route.file;
+            next(html);
           });
-
-          hook.doneEach(function () {
-            // Inject "New Note" into sidebar if not there
-            const sidebar = document.querySelector('.sidebar-nav');
-            if (sidebar && !document.querySelector('.new-note-btn')) {
-              const btn = document.createElement('a');
-              btn.className = 'new-note-btn';
-              btn.innerText = '+ 新增筆記';
-              btn.href = '#/Untitled-' + Date.now();
-              sidebar.insertBefore(btn, sidebar.firstChild);
-            }
-
-            // Update current file tracking
-            window.currentFilePath = vm.route.file;
-
-            // Check for 404 (Docsify renders "404 - Not found" text usually)
-            // But better logic: check if content element is essentially empty or has specific class
-            // Actually, we can check if file exists via API when entering Edit Mode.
-            // For now, let's assume if user clicks Edit on a 404 page, they want to create it.
+          hook.doneEach(() => {
+            const content = document.querySelector('.markdown-section');
+            if (content && (content.innerText.includes('404 - Not found') || content.innerText.includes('not found'))) {
+               content.innerHTML = `<div style="text-align:center; padding: 50px;"><h2>📝 筆記不存在</h2><p>檔案尚未建立。</p><button class="btn-login" style="width:200px; margin:20px auto;" onclick="openEditor()">立即建立</button></div>`;
+               window.isNewFile = true;
+            } else { window.isNewFile = false; }
           });
         }
       ]
     };
 
-    // --------------------------------------------------------------------------
-    //                                EDITOR Logic                              
-    // --------------------------------------------------------------------------
-    let editorInstance = null;
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+    window.createNewNote = function() {
+      const name = prompt("輸入筆記檔名:", "Untitled-" + Date.now());
+      if (name) window.location.hash = `#/${name}`;
+    }
 
-    window.openEditor = async function () {
-      if (!CONFIG.token) {
-        showLoginModal();
-        return;
-      }
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
 
-      const path = window.currentFilePath;
-      document.getElementById('editor-container').style.display = 'flex';
-      document.getElementById('editor-filename').innerText = `正在編輯: ${path}`;
-
-      // Initialize Monaco first if needed
+    window.openEditor = async function() {
+      const path = getCleanPath();
+      document.getElementById('editor-overlay').style.display = 'flex';
+      document.getElementById('edit-title').innerText = isNewFile ? `✨ 建立: ${path}` : `✎ 編輯: ${path}`;
+      
       if (!editorInstance) {
-        await new Promise(resolve => require(['vs/editor/editor.main'], () => {
+        await new Promise(r => require(['vs/editor/editor.main'], () => {
           editorInstance = monaco.editor.create(document.getElementById('monaco-host'), {
-            value: 'Loading...',
-            language: 'markdown',
-            theme: 'vs-light',
-            wordWrap: 'on',
-            minimap: { enabled: false },
-            fontSize: 16,
-            lineHeight: 28,
-            padding: { top: 20, bottom: 20 },
-            automaticLayout: true
+            value: 'Loading...', language: 'markdown', theme: 'vs-light', wordWrap: 'on', fontSize: 16, minimap:{enabled:false}
           });
-
-          // Image Paste
-          editorInstance.getDomNode().addEventListener('paste', handleImagePaste);
-          // Ctrl+S to save
-          editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveToGitHub);
-
-          resolve();
+          editorInstance.getDomNode().addEventListener('paste', handlePaste);
+          editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveFile);
+          r();
         }));
       }
 
-      // Fetch Content (Check if exists)
-      const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}?ref=${CONFIG.branch}`;
-
-      try {
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `token ${CONFIG.token}`,
-            'Accept': 'application/vnd.github.v3+json'
-          }
-        });
-
-        if (response.status === 404) {
-          // NEW FILE MODE
-          window.isNewFile = true;
-          window.currentFileSha = null;
-          editorInstance.setValue(`# ${path.replace('.md', '').replace('/', '')}\n\n`);
-          document.getElementById('editor-filename').innerText = ` ✨ 新增筆記: ${path}`;
-        } else {
-          // EDIT MODE
-          if (!response.ok) throw new Error('讀取錯誤');
-          const data = await response.json();
-          window.isNewFile = false;
-          window.currentFileSha = data.sha;
-          const content = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
-          editorInstance.setValue(content);
-        }
-      } catch (e) {
-        alert(e.message);
-        closeEditor();
-      }
-    };
-
-    window.closeEditor = function () {
-      document.getElementById('editor-container').style.display = 'none';
-      if (window.isNewFile) history.back();
-    };
-
-    window.saveToGitHub = async function () {
-      const content = editorInstance.getValue();
-      const contentEncoded = btoa(new TextEncoder().encode(content).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-      const path = window.currentFilePath;
-
-      const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`;
-
-      const commitMsg = window.isNewFile ? `Create ${path}` : `Update ${path}`;
-
-      const body = {
-        message: commitMsg,
-        content: contentEncoded,
-        branch: CONFIG.branch
-      };
-
-      if (!window.isNewFile && window.currentFileSha) {
-        body.sha = window.currentFileSha;
-      }
-
-      try {
-        const response = await fetch(url, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `token ${CONFIG.token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          window.currentFileSha = data.content.sha; // Update SHA
-          window.isNewFile = false;
-          alert('儲存成功！');
-          document.getElementById('editor-container').style.display = 'none';
-
-          // Wait a bit for GitHub Pages then reload
-          setTimeout(() => location.reload(), 2000);
-        } else {
-          const err = await response.json();
-          alert('儲存失敗: ' + err.message);
-        }
-      } catch (e) {
-        alert('網路錯誤: ' + e.message);
-      }
-    };
-
-    // --------------------------------------------------------------------------
-    //                                IMAGE Logic                               
-    // --------------------------------------------------------------------------
-    async function handleImagePaste(e) {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-      for (let index in items) {
-        const item = items[index];
-        if (item.kind === 'file' && item.type.includes('image/')) {
-          e.preventDefault();
-          const blob = item.getAsFile();
-          await uploadImage(blob);
-          return;
-        }
-      }
-    }
-
-    async function uploadImage(blob) {
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = async function () {
-        const base64data = reader.result.split(',')[1];
-        const filename = `images/${Date.now()}.png`; // Simple timestamp name
-        const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${filename}`;
-
+      if (isNewFile) {
+        editorInstance.setValue(`# ${path.split('/').pop().replace('.md','')}\n\n`); currentSha = null;
+      } else {
         try {
-          // Should add loading indicator here
-          const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${CONFIG.token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              message: `Upload image ${filename}`,
-              content: base64data,
-              branch: CONFIG.branch
-            })
-          });
+          const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}?ref=${CONFIG.branch}`, { headers: { Authorization: `token ${CONFIG.token}` } });
+          if(res.ok) {
+            const data = await res.json();
+            currentSha = data.sha;
+            editorInstance.setValue(new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0))));
+          } else { editorInstance.setValue(`# ${path}\n\n`); currentSha = null; }
+        } catch(e) { }
+      }
+    };
 
-          if (response.ok) {
-            const data = await response.json();
-            const position = editorInstance.getPosition();
-            // Use raw.githubusercontent or relative path? Relative is safer for Docsify
-            // data.content.download_url is full URL. Let's use relative for portability.
-            const textToInsert = `\n![Image](${filename})\n`;
-            editorInstance.executeEdits("", [{
-              range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
-              text: textToInsert,
-              forceMoveMarkers: true
-            }]);
-          } else {
-            console.error('Image upload failed');
-            alert('圖片上傳失敗');
-          }
-        } catch (e) {
-          console.error(e);
-        }
+    window.cancelEdit = () => document.getElementById('editor-overlay').style.display = 'none';
+
+    window.saveFile = async function() {
+      const path = getCleanPath();
+      const content = editorInstance.getValue();
+      const encoded = btoa(new TextEncoder().encode(content).reduce((d,b)=>d+String.fromCharCode(b),''));
+      const body = { message: isNewFile ? `Create ${path}` : `Update ${path}`, content: encoded, branch: CONFIG.branch };
+      if (!isNewFile && currentSha) body.sha = currentSha;
+
+      try {
+        const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`, {
+          method: 'PUT', headers: { Authorization: `token ${CONFIG.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        });
+        if (res.ok) {
+          const data = await res.json(); currentSha = data.content.sha; isNewFile = false; alert('儲存成功');
+          document.getElementById('editor-overlay').style.display = 'none';
+          setTimeout(() => location.reload(), 2000);
+        } else { alert('儲存失敗: ' + (await res.json()).message); }
+      } catch(e) { alert(e.message); }
+    };
+
+    function getCleanPath() {
+      let path = location.hash.replace('#/', '').split('?')[0];
+      if (!path) path = 'README.md';
+      if (!path.endsWith('.md')) path += '.md';
+      return path;
+    }
+
+    window.triggerImageUpload = () => document.getElementById('img-upload-hidden').click();
+    window.handleFileSelect = async (input) => { if (input.files[0]) await uploadImageFile(input.files[0]); };
+    async function handlePaste(e) {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let item of items) { if (item.kind === 'file' && item.type.startsWith('image/')) { e.preventDefault(); await uploadImageFile(item.getAsFile()); }}
+    }
+    async function uploadImageFile(file) {
+      const reader = new FileReader(); reader.readAsDataURL(file);
+      reader.onloadend = async () => {
+        const b64 = reader.result.split(',')[1]; const name = `images/${Date.now()}-${file.name || 'img.png'}`;
+        editorInstance.trigger('keyboard', 'type', {text: `![Uploading...](${name})`});
+        try {
+          const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${name}`, {
+            method: 'PUT', headers: { Authorization: `token ${CONFIG.token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'Upload image', content: b64, branch: CONFIG.branch })
+          });
+          if (res.ok) {
+             const pos = editorInstance.getPosition();
+             // Ideally verify upload but for now assume success
+             alert('上傳成功！請稍後，GitHub 需要一點時間快取圖片。');
+          } else alert('上傳失敗');
+        } catch(e) {}
       }
     }
-  </script>
 
+    checkLogin();
+  </script>
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
 </body>
-
 </html>
