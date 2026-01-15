@@ -2,118 +2,76 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>Cloud Notes v5.1</title>
+  <title>Cloud Notes v5.2 - Final Stable</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-  <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
-  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
   <style>
     :root {
-      --bg-color: #f5f7fa; --glass-bg: rgba(255, 255, 255, 0.85); --text-main: #1e293b; --text-sub: #64748b;
-      --sidebar-bg: rgba(255,255,255,0.8); --card-bg: #ffffff; --border-color: rgba(0,0,0,0.05); --primary-color: #2563eb;
+      --bg-color: #f8fafc; --glass-bg: rgba(255, 255, 255, 0.9); --text-main: #0f172a; --text-sub: #475569;
+      --sidebar-bg: #ffffff; --card-bg: #ffffff; --border-color: #e2e8f0; --primary-color: #2563eb;
     }
     [data-theme="dark"] {
-      --bg-color: #111111; --glass-bg: rgba(30, 30, 30, 0.85); --text-main: #e2e8f0; --text-sub: #94a3b8;
-      --sidebar-bg: rgba(20, 20, 20, 0.9); --card-bg: #1e1e1e; --border-color: rgba(255,255,255,0.1); --primary-color: #60a5fa;
+      --bg-color: #0f172a; --glass-bg: rgba(30, 41, 59, 0.9); --text-main: #f1f5f9; --text-sub: #94a3b8;
+      --sidebar-bg: #1e293b; --card-bg: #1e293b; --border-color: #334155; --primary-color: #3b82f6;
     }
-    * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-color); margin: 0; height: 100vh; overflow: hidden; color: var(--text-main); }
-
-    /* Layout */
+    body { font-family: 'Inter', sans-serif; background: var(--bg-color); margin: 0; min-height: 100vh; overflow: hidden; color: var(--text-main); }
     #app-shell { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
-    .sidebar-container {
-      width: 280px; background: var(--sidebar-bg); backdrop-filter: blur(20px); border-right: 1px solid var(--border-color);
-      display: flex; flex-direction: column; padding: 20px; z-index: 20;
-    }
-    .main-area {
-      flex: 1; position: relative; overflow-y: auto; background: var(--card-bg); margin: 15px; border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; border: 1px solid var(--border-color);
-    }
+    .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px; z-index: 100; }
+    .main-content { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg-color); }
+    .brand { font-weight: 800; font-size: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; color: var(--primary-color); }
+    .btn-action { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; }
+    #file-list { flex: 1; overflow-y: auto; }
+    .file-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: var(--text-sub); font-size: 14px; margin-bottom: 4px; transition: 0.2s; }
+    .file-link:hover { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); }
+    .file-link.active { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 600; }
     
-    .brand { font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 10px; color: var(--text-main); margin-bottom: 20px; }
-    .new-btn {
-      background: var(--primary-color); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; font-weight: 600;
-      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
-    }
-
-    #file-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; }
-    .file-item {
-      padding: 10px 12px; margin-bottom: 4px; border-radius: 6px; cursor: pointer; color: var(--text-sub);
-      display: flex; align-items: center; gap: 8px; font-size: 14px; text-decoration: none;
-    }
-    .file-item:hover { background: rgba(127,127,127,0.1); color: var(--text-main); }
-    .file-item.active { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 500; }
-
-    #login-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-color); z-index: 9999;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-    }
-    .login-box {
-      background: var(--card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border-color);
-    }
-    .inp-field {
-      width: 100%; padding: 12px 15px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 10px;
-      background: var(--bg-color); color: var(--text-main); font-size: 14px;
-    }
-    .btn-login { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
-
-    #editor-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--card-bg); z-index: 100;
-      display: none; flex-direction: column;
-    }
-    .editor-top { height: 60px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+    #login-screen { position: fixed; inset: 0; background: var(--bg-color); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    .login-card { background: var(--card-bg); padding: 40px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 360px; text-align: center; border: 1px solid var(--border-color); }
+    input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 15px; font-size: 14px; background: var(--bg-color); color: var(--text-main); }
+    
+    #editor-overlay { position: absolute; inset: 0; background: var(--card-bg); z-index: 200; display: none; flex-direction: column; }
+    .editor-header { height: 64px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
     #monaco-host { flex: 1; }
-    
-    .sidebar-toggle, .sidebar { display: none !important; }
-    .markdown-section { color: var(--text-main) !important; padding: 40px 60px !important; }
-    .markdown-section code { background: rgba(127,127,127,0.1) !important; color: var(--primary-color) !important; }
-
-    .err-msg { color: #f43f5e; font-size: 12px; margin-top: 10px; text-align: left; background: rgba(244,63,94,0.1); padding: 8px; border-radius: 6px; }
+    .sidebar-toggle, .sidebar-nav { display: none !important; }
+    .markdown-section { padding: 40px 60px !important; color: var(--text-main) !important; }
+    .err-box { padding: 15px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; font-size: 13px; margin-top: 20px; }
   </style>
 </head>
 <body data-theme="light">
 
   <div id="login-screen">
-    <div class="login-box">
-      <div style="font-size: 40px; margin-bottom: 20px;">🌘</div>
-      <h1>Cloud Notes v5.1</h1>
-      <p style="color:var(--text-sub)">即時同步・修正讀取問題</p>
-      <input type="password" id="inp-password" class="inp-field" placeholder="GitHub Token" autocomplete="current-password">
-      <button class="btn-login" id="login-btn" onclick="attemptLogin()">進入系統</button>
-      <div style="margin-top: 20px;"><a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" style="color:var(--text-sub); font-size:12px;">點此申請 Token</a></div>
+    <div class="login-card">
+      <h1 style="margin:0 0 10px">Cloud Notes</h1>
+      <p style="color:var(--text-sub); margin-bottom:25px">輸入 Token 密碼</p>
+      <input type="password" id="token-input" placeholder="GitHub Personal Access Token">
+      <button class="btn-action" onclick="doLogin()">進入筆記本</button>
     </div>
   </div>
 
   <div id="app-shell">
-    <div class="sidebar-container">
-      <div class="brand"><i class="ri-cloud-windy-line"></i> Cloud Notes</div>
-      <button class="new-btn" onclick="createNewNote()"><i class="ri-add-line"></i> 新增筆記</button>
+    <div class="sidebar">
+      <div class="brand">Cloud Notes</div>
+      <button class="btn-action" onclick="newNote()"><i class="ri-add-line"></i> 新增筆記</button>
       <div id="file-list"></div>
-      <div style="margin-top: auto; display:flex; justify-content:space-between; align-items:center; padding-top:15px; border-top:1px solid var(--border-color);">
-        <div style="font-size: 12px; color: var(--text-sub); cursor: pointer;" onclick="logout()">登出</div>
-        <div style="cursor: pointer;" onclick="toggleTheme()" id="theme-icon">☀️</div>
+      <div style="margin-top:auto; padding-top:15px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+        <span onclick="logout()" style="cursor:pointer; font-size:12px; color:var(--text-sub)">登出</span>
+        <span onclick="toggleTheme()" style="cursor:pointer; font-size:18px" id="theme-icon">☀️</span>
       </div>
     </div>
-
-    <div class="main-area">
-      <div class="editor-top" style="justify-content: flex-end; gap:10px;">
-         <div id="loading-indicator" style="margin-right:auto; font-size:12px; color:var(--text-sub); display:none;">同步中...</div>
-         <button class="btn-login" style="width:auto; padding:6px 15px; font-size:14px; background:transparent; color:var(--text-sub); border:1px solid var(--border-color);" onclick="openEditor()"><i class="ri-edit-line"></i> 編輯</button>
+    <div class="main-content">
+      <div class="editor-header" style="justify-content: flex-end; gap:10px;">
+        <button class="btn-action" style="width:auto; background:transparent; color:var(--text-sub); border:1px solid var(--border-color); font-size:13px;" onclick="startEdit()"><i class="ri-edit-line"></i> 編輯此頁</button>
       </div>
       <div id="app"></div>
       <div id="editor-overlay">
-        <div class="editor-top">
-          <div style="font-weight: 600;" id="edit-title">編輯模式</div>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn-login" style="width:auto; padding:6px 15px; background: #eee; color:#333;" onclick="triggerImageUpload()">📷 圖片</button>
-            <input type="file" id="img-upload-hidden" style="display:none" onchange="handleFileSelect(this)">
-            <button class="btn-login" style="width:auto; padding:6px 15px; background: #eee; color:#333;" onclick="cancelEdit()">取消</button>
-            <button class="btn-login" style="width:auto; padding:6px 15px;" onclick="saveFile()">儲存</button>
+        <div class="editor-header">
+          <span id="editor-title" style="font-weight:600">正在編輯</span>
+          <div style="display:flex; gap:10px">
+             <button class="btn-action" style="width:auto; background:#f1f5f9; color:#475569" onclick="closeEditor()">取消</button>
+             <button class="btn-action" style="width:auto; margin-bottom:0" onclick="saveContent()">儲存筆記</button>
           </div>
         </div>
         <div id="monaco-host"></div>
@@ -124,65 +82,59 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    const CONFIG = { 
-      token: localStorage.getItem('gh_pat'),
-      owner: localStorage.getItem('gh_owner'),
-      repo: localStorage.getItem('gh_repo') || 'cloud-notes'
+    const STORAGE = {
+      token: () => localStorage.getItem('gh_token'),
+      owner: () => localStorage.getItem('gh_owner'),
+      repo: () => localStorage.getItem('gh_repo') || 'cloud-notes'
     };
-    let editorInstance = null, currentSha = null, isNewFile = false;
+    let editor = null; let currentSha = null;
 
-    function init() {
+    async function init() {
       const theme = localStorage.getItem('theme') || 'light';
       document.body.setAttribute('data-theme', theme);
-      if (CONFIG.token && CONFIG.owner) {
+      document.getElementById('theme-icon').innerText = theme === 'dark' ? '🌙' : '☀️';
+
+      if (STORAGE.token() && STORAGE.owner()) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-shell').style.opacity = '1';
-        fetchFileList();
+        await refreshSidebar();
       }
     }
 
-    async function attemptLogin() {
-      const token = document.getElementById('inp-password').value.trim();
-      const btn = document.getElementById('login-btn');
-      btn.innerText = '正在登入...';
+    async function doLogin() {
+      const token = document.getElementById('token-input').value.trim();
+      if(!token) return alert('請輸入 Token');
       try {
         const res = await fetch('https://api.github.com/user', { headers: { Authorization: `Bearer ${token}` } });
-        if(!res.ok) throw new Error('Token 無效');
+        if(!res.ok) throw new Error('Token 無效或已過期');
         const user = await res.json();
-        localStorage.setItem('gh_pat', token);
+        localStorage.setItem('gh_token', token);
         localStorage.setItem('gh_owner', user.login);
-        localStorage.setItem('gh_repo', 'cloud-notes');
         location.reload();
-      } catch(e) {
-        alert(e.message); btn.innerText = '進入系統';
-      }
+      } catch(e) { alert(e.message); }
     }
 
-    async function fetchFileList() {
-      const listEl = document.getElementById('file-list');
-      listEl.innerHTML = '<div style="padding:20px; color:#999;">讀取中...</div>';
+    async function refreshSidebar() {
+      const list = document.getElementById('file-list');
+      list.innerHTML = '<div style="color:#94a3b8; font-size:13px; padding:10px">同步中...</div>';
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/`, {
-          headers: { Authorization: `Bearer ${CONFIG.token}`, 'Cache-Control': 'no-cache' }
+        const res = await fetch(`https://api.github.com/repos/${STORAGE.owner()}/${STORAGE.repo()}/contents?ref=main`, {
+          headers: { Authorization: `Bearer ${STORAGE.token()}`, 'Cache-Control': 'no-cache' }
         });
-        if(res.status === 404) {
-           listEl.innerHTML = '<div style="padding:15px; color:#999; font-size:13px;">☁️ 倉庫是空的<br>請點擊上方按鈕建立第一筆記</div>';
-           return;
-        }
-        if(!res.ok) throw new Error(await res.text());
+        if(!res.ok) throw new Error(`API 錯誤: ${res.status}`);
         const files = await res.json();
-        listEl.innerHTML = '';
-        files.filter(f => f.name.endsWith('.md') && f.name !== '_sidebar.md')
-             .sort((a,b) => a.name.localeCompare(b.name))
+        list.innerHTML = '';
+        files.filter(f => f.name.toLowerCase().endsWith('.md') && f.name !== '_sidebar.md')
+             .sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric: true}))
              .forEach(f => {
-               const item = document.createElement('a');
-               item.className = 'file-item' + (location.hash === `#/${f.name}` ? ' active' : '');
-               item.href = `#/${f.name}`;
-               item.innerHTML = `<i class="ri-file-text-line"></i> ${f.name.replace('.md','')}`;
-               listEl.appendChild(item);
+               const a = document.createElement('a');
+               a.className = 'file-link' + (location.hash === `#/${f.name}` ? ' active' : '');
+               a.href = `#/${f.name}`;
+               a.innerHTML = `<i class="ri-file-text-line"></i> ${f.name.replace('.md','')}`;
+               list.appendChild(a);
              });
       } catch(e) {
-        listEl.innerHTML = `<div class="err-msg">讀取失敗: ${e.message.substring(0,50)}...</div><button onclick="fetchFileList()" style="font-size:10px; margin:5px; cursor:pointer;">重試</button>`;
+        list.innerHTML = `<div class="err-box">讀取失敗: ${e.message}<br><button onclick="refreshSidebar()" style="margin-top:10px; cursor:pointer">點此重試</button></div>`;
       }
     }
 
@@ -191,88 +143,100 @@
       plugins: [
         function(hook, vm) {
           hook.doneEach(() => {
-            const content = document.querySelector('.markdown-section');
-            if (content && (content.innerHTML.includes('404') || content.innerHTML.trim() === '' || document.title.includes('404'))) {
-               const path = location.hash.replace('#/', '') || 'README.md';
-               fetchContentViaAPI(path);
-            }
+            const path = location.hash.replace('#/', '') || 'README.md';
+            fetchLatest(path);
+            document.querySelectorAll('.file-link').forEach(el => {
+               el.classList.toggle('active', el.getAttribute('href') === location.hash);
+            });
           });
         }
       ]
     };
 
-    async function fetchContentViaAPI(path) {
-       document.querySelector('#app').innerHTML = '<div style="padding:50px; text-align:center;">🚀 正在抓取最新內容...</div>';
-       try {
-         const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`, {
-            headers: { Authorization: `Bearer ${CONFIG.token}`, 'Cache-Control': 'no-cache' }
-         });
-         if(res.ok) {
-           const data = await res.json();
-           const decoded = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
-           document.querySelector('#app').innerHTML = `<div class="markdown-section">${marked.parse(decoded)}</div>`;
-           isNewFile = false;
-         } else {
-           document.querySelector('#app').innerHTML = `<div style="text-align:center; padding: 50px;"><h2>📝 筆記不存在</h2><button class="btn-login" style="width:auto;" onclick="openEditor()">立即建立</button></div>`;
-           isNewFile = true;
-         }
-       } catch(e) { document.querySelector('#app').innerHTML = 'API 讀取失敗'; }
+    async function fetchLatest(path) {
+      const appEl = document.querySelector('#app');
+      try {
+        const res = await fetch(`https://api.github.com/repos/${STORAGE.owner()}/${STORAGE.repo()}/contents/${path}?ref=main`, {
+          headers: { Authorization: `Bearer ${STORAGE.token()}`, 'Cache-Control': 'no-cache' }
+        });
+        if(res.ok) {
+          const data = await res.json();
+          currentSha = data.sha;
+          const decoded = new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0)));
+          appEl.innerHTML = `<div class="markdown-section">${marked.parse(decoded)}</div>`;
+        } else {
+          appEl.innerHTML = `<div style="text-align:center; padding:100px 50px"><h2>筆記不存在</h2><button class="btn-action" style="width:auto; padding:10px 40px" onclick="startEdit()">立即建立</button></div>`;
+          currentSha = null;
+        }
+      } catch(e) { console.error('API Fetch failed', e); }
     }
 
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
-    window.openEditor = async function() {
-      const path = location.hash.replace('#/', '').split('?')[0] || 'README.md';
+    async function startEdit() {
+      const path = location.hash.replace('#/', '') || 'README.md';
       document.getElementById('editor-overlay').style.display = 'flex';
-      if (!editorInstance) {
-         await new Promise(r => require(['vs/editor/editor.main'], () => {
-             editorInstance = monaco.editor.create(document.getElementById('monaco-host'), {
-                 value: 'Loading...', language: 'markdown', automaticLayout: true, theme: document.body.getAttribute('data-theme')==='dark'?'vs-dark':'vs-light'
-             });
-             editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveFile);
-             r();
-         }));
+      document.getElementById('editor-title').innerText = `編輯: ${path}`;
+      
+      if(!editor) {
+        await new Promise(r => require(['vs/editor/editor.main'], () => {
+          editor = monaco.editor.create(document.getElementById('monaco-host'), {
+            value: '讀取中...', language: 'markdown', automaticLayout: true,
+            theme: document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs-light'
+          });
+          editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, saveContent);
+          r();
+        }));
       }
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`, {
-           headers: { Authorization: `Bearer ${CONFIG.token}`, 'Cache-Control': 'no-cache' }
+        const res = await fetch(`https://api.github.com/repos/${STORAGE.owner()}/${STORAGE.repo()}/contents/${path}?ref=main`, {
+          headers: { Authorization: `Bearer ${STORAGE.token()}`, 'Cache-Control': 'no-cache' }
         });
         if(res.ok) {
-           const data = await res.json(); currentSha = data.sha;
-           editorInstance.setValue(new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0))));
-        } else { editorInstance.setValue(`# ${path.replace('.md','')}\n`); currentSha = null; }
-      } catch(e) {}
+          const data = await res.json(); currentSha = data.sha;
+          editor.setValue(new TextDecoder().decode(Uint8Array.from(atob(data.content), c => c.charCodeAt(0))));
+        } else {
+          editor.setValue(`# ${path.replace('.md','')}\n\n在這裡輸入內容...`); currentSha = null;
+        }
+      } catch(e) { editor.setValue('讀取失敗'); }
     }
 
-    async function saveFile() {
-      const path = location.hash.replace('#/', '').split('?')[0] || 'README.md';
-      const content = editorInstance.getValue();
-      const encoded = btoa(new TextEncoder().encode(content).reduce((d,b)=>d+String.fromCharCode(b),''));
-      const body = { message: 'Save via Cloud Notes', content: encoded };
+    async function saveContent() {
+      const path = location.hash.replace('#/', '') || 'README.md';
+      const content = editor.getValue();
+      const b64 = btoa(new TextEncoder().encode(content).reduce((d,b)=>d+String.fromCharCode(b),''));
+      const body = { message: 'Cloud Note Update', content: b64, branch: 'main' };
       if (currentSha) body.sha = currentSha;
+
       try {
-        const res = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${path}`, {
-           method: 'PUT', headers: { Authorization: `Bearer ${CONFIG.token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        const res = await fetch(`https://api.github.com/repos/${STORAGE.owner()}/${STORAGE.repo()}/contents/${path}`, {
+          method: 'PUT', headers: { Authorization: `Bearer ${STORAGE.token()}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
         });
         if(res.ok) {
-           alert('儲存成功');
-           document.getElementById('editor-overlay').style.display = 'none';
-           fetchFileList(); fetchContentViaAPI(path);
+          alert('儲存完成！'); closeEditor(); 
+          await refreshSidebar();
+          await fetchLatest(path);
         } else { alert('儲存失敗'); }
       } catch(e) { alert(e.message); }
     }
 
-    window.createNewNote = () => {
-       const name = prompt('筆記名稱:', `note-${Date.now()}`);
-       if(name) { window.isNewFile = true; window.location.hash = `#/${name}.md`; setTimeout(openEditor, 200); }
+    function closeEditor() { document.getElementById('editor-overlay').style.display = 'none'; }
+    function newNote() {
+      const name = prompt('筆記名稱:', `note-${Date.now()}`);
+      if(name) {
+        const cleanName = name.endsWith('.md') ? name : name + '.md';
+        window.location.hash = `#/${cleanName}`;
+        setTimeout(startEdit, 300);
+      }
     }
-    window.cancelEdit = () => document.getElementById('editor-overlay').style.display = 'none';
-    window.toggleTheme = () => {
+    function toggleTheme() {
        const next = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
        document.body.setAttribute('data-theme', next);
        localStorage.setItem('theme', next);
-       if(editorInstance) monaco.editor.setTheme(next==='dark'?'vs-dark':'vs-light');
+       if(editor) monaco.editor.setTheme(next === 'dark' ? 'vs-dark' : 'vs-light');
+       document.getElementById('theme-icon').innerText = next === 'dark' ? '🌙' : '☀️';
     }
-    window.logout = () => { localStorage.clear(); location.reload(); }
+    function logout() { if(confirm('登出？')){ localStorage.clear(); location.reload(); } }
     init();
   </script>
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
