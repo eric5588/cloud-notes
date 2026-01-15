@@ -3,54 +3,71 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Cognition Note Pro - 極致雲端筆記體驗</title>
+  <title>Cognition OS v3 - 智慧雲端作業系統</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Google Fonts & Icons -->
+  <!-- Google Fonts & Remix Icons -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-  <!-- Monaco Editor CSS -->
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.css">
   <style>
     :root {
-      --accent: #10b981;
-      /* Emerald */
-      --accent-glow: rgba(16, 185, 129, 0.4);
-      --bg: #090e1a;
-      --sidebar-bg: rgba(15, 23, 42, 0.95);
-      --panel-bg: rgba(30, 41, 59, 0.4);
-      --border: rgba(255, 255, 255, 0.08);
-      --text: #f8fafc;
-      --text-dim: #94a3b8;
-      --glass: blur(20px);
-      --radius: 16px;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.3);
+      --bg-deep: #050810;
+      --sidebar-bg: rgba(10, 15, 28, 0.8);
+      --glass-bg: rgba(22, 30, 46, 0.4);
+      --border: rgba(255, 255, 255, 0.06);
+      --text-main: #f1f5f9;
+      --text-dim: #64748b;
+      --glass-blur: blur(25px);
     }
 
     * {
       box-sizing: border-box;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
     }
 
     body {
-      font-family: 'Inter', 'PingFang TC', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-main);
       margin: 0;
       height: 100vh;
       overflow: hidden;
+      display: flex;
       background-image:
-        radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.1) 0%, transparent 40%),
-        radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.1) 0%, transparent 40%);
+        radial-gradient(circle at 10% 10%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(59, 130, 246, 0.08) 0%, transparent 40%);
     }
 
-    /* --- Login Overlay --- */
-    #login-overlay {
+    /* --- Custom Scrollbar --- */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--emerald);
+    }
+
+    /* --- Login Screen --- */
+    #login-screen {
       position: fixed;
       inset: 0;
       z-index: 9999;
-      background: var(--bg);
+      background: var(--bg-deep);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -58,24 +75,28 @@
     }
 
     .login-card {
-      background: var(--panel-bg);
-      padding: 48px;
+      background: rgba(22, 30, 46, 0.8);
+      backdrop-filter: var(--glass-blur);
+      padding: 50px;
       border-radius: 32px;
       border: 1px solid var(--border);
       width: 440px;
       text-align: center;
-      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
     }
 
     .login-card h1 {
-      font-family: 'Outfit', sans-serif;
-      font-size: 32px;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
     }
 
     .input-group {
-      margin-top: 24px;
+      margin-top: 30px;
       text-align: left;
     }
 
@@ -84,59 +105,58 @@
       font-size: 13px;
       color: var(--text-dim);
       margin-bottom: 8px;
+      padding-left: 5px;
     }
 
     input {
       width: 100%;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.4);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 14px 18px;
+      padding: 15px 20px;
       color: white;
-      font-family: inherit;
-      outline: none;
+      font-size: 14px;
     }
 
     input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px var(--accent-glow);
+      border-color: var(--emerald);
+      box-shadow: 0 0 0 4px var(--emerald-glow);
     }
 
-    .btn-glow {
+    .btn-confirm {
       width: 100%;
-      margin-top: 32px;
-      background: var(--accent);
+      margin-top: 30px;
+      background: var(--emerald);
       color: #000;
       font-weight: 700;
       padding: 16px;
       border-radius: 12px;
       border: none;
       cursor: pointer;
-      box-shadow: 0 8px 24px var(--accent-glow);
+      box-shadow: 0 10px 30px var(--emerald-glow);
     }
 
-    .btn-glow:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 32px var(--accent-glow);
+    .btn-confirm:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 40px var(--emerald-glow);
     }
 
-    /* --- App Layout --- */
-    #app-root {
-      display: flex;
+    /* --- OS Layout --- */
+    #os-root {
+      display: none;
+      flex: 1;
       height: 100vh;
-      opacity: 0;
-      transform: scale(0.98);
     }
 
-    #app-root.active {
-      opacity: 1;
-      transform: scale(1);
+    #os-root.active {
+      display: flex;
     }
 
-    /* Sidebar Navigation */
-    .nav-rail {
-      width: 80px;
+    /* Left Sidebar (Nav Rail) */
+    .sidebar {
+      width: 84px;
       background: var(--sidebar-bg);
+      backdrop-filter: var(--glass-blur);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
@@ -145,121 +165,147 @@
       z-index: 100;
     }
 
-    .nav-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
+    .nav-item {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--text-dim);
       cursor: pointer;
-      margin-bottom: 16px;
-      position: relative;
+      margin-bottom: 15px;
+      font-size: 24px;
     }
 
-    .nav-icon:hover,
-    .nav-icon.active {
-      color: var(--accent);
+    .nav-item:hover,
+    .nav-item.active {
+      color: var(--emerald);
       background: rgba(16, 185, 129, 0.1);
     }
 
-    .nav-icon.active::after {
-      content: '';
-      position: absolute;
-      left: -15px;
-      width: 4px;
-      height: 24px;
-      background: var(--accent);
-      border-radius: 0 4px 4px 0;
-      box-shadow: 2px 0 10px var(--accent-glow);
+    .nav-item.active {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
     }
 
-    /* File Explorer Panle */
-    .explorer-pane {
-      width: 300px;
-      background: rgba(15, 23, 42, 0.4);
-      backdrop-filter: var(--glass);
+    /* Secondary Pane (Files) */
+    .file-pane {
+      width: 320px;
+      background: rgba(10, 15, 28, 0.4);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
     }
 
-    .explorer-header {
-      padding: 30px 24px 20px;
+    .pane-header {
+      padding: 30px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .explorer-header h2 {
-      font-family: 'Outfit';
+    .pane-header h2 {
+      font-size: 24px;
+      font-weight: 600;
       margin: 0;
-      font-size: 20px;
     }
 
-    .search-box {
+    .search-container {
       margin: 0 20px 20px;
       position: relative;
     }
 
-    .search-box i {
+    .search-container i {
       position: absolute;
-      left: 14px;
+      left: 15px;
       top: 12px;
       color: var(--text-dim);
     }
 
-    .search-box input {
-      padding-left: 40px;
-      background: rgba(0, 0, 0, 0.2);
+    .search-container input {
+      padding-left: 45px;
+      background: rgba(0, 0, 0, 0.3);
       font-size: 13px;
     }
 
-    .file-list {
+    .scroll-list {
       flex: 1;
       overflow-y: auto;
-      padding: 0 12px;
+      padding: 0 15px;
     }
 
-    .file-item {
-      padding: 12px 16px;
-      border-radius: 10px;
-      margin-bottom: 4px;
+    .note-item {
+      padding: 15px 18px;
+      border-radius: 14px;
+      margin-bottom: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      color: var(--text-dim);
+      gap: 15px;
+      background: transparent;
+      border: 1px solid transparent;
     }
 
-    .file-item:hover,
-    .file-item.active {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text);
+    .note-item:hover {
+      background: rgba(255, 255, 255, 0.03);
     }
 
-    .file-item.active {
+    .note-item.active {
       background: rgba(16, 185, 129, 0.08);
-      color: var(--accent);
+      border-color: rgba(16, 185, 129, 0.2);
     }
 
-    .file-item i {
-      font-size: 18px;
+    .note-item.active i {
+      color: var(--emerald);
+    }
+
+    .note-item .info {
+      flex: 1;
+    }
+
+    .note-item .name {
+      font-weight: 500;
+      font-size: 14px;
+      display: block;
+    }
+
+    .note-item .meta {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-sync {
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+    }
+
+    .status-local {
+      background: #f59e0b;
+      box-shadow: 0 0 8px #f59e0b;
     }
 
     /* Main Workspace */
-    .workspace {
+    .main-stage {
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: var(--bg);
+      background: var(--bg-deep);
       position: relative;
     }
 
-    .ws-header {
-      height: 80px;
+    .stage-header {
+      height: 90px;
       padding: 0 40px;
       display: flex;
       align-items: center;
@@ -267,492 +313,540 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .note-title-active {
-      font-family: 'Outfit';
-      font-size: 20px;
+    .active-title {
+      font-size: 22px;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .ws-actions {
+    .actions-row {
       display: flex;
       gap: 12px;
     }
 
-    .btn-action {
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: 600;
+    .btn-os {
+      padding: 10px 18px;
+      border-radius: 12px;
       font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 8px;
-      color: var(--text);
     }
 
-    .btn-action.primary {
-      background: var(--accent);
+    .btn-os:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .btn-os.primary {
+      background: var(--emerald);
       color: #000;
       border: none;
     }
 
-    .btn-action:hover {
-      opacity: 0.8;
-      transform: translateY(-1px);
-    }
-
-    /* Editor & Preview Panes */
-    .editor-container {
+    /* Editor & UI Sections */
+    .workspace-split {
       flex: 1;
       display: flex;
       overflow: hidden;
-      position: relative;
     }
 
-    #monaco-root {
+    #monaco-container {
       flex: 1;
+      background: transparent !important;
     }
 
-    #preview-root {
+    #preview-pane {
       flex: 1;
       border-left: 1px solid var(--border);
-      padding: 40px;
+      padding: 50px 60px;
       overflow-y: auto;
-      background: rgba(0, 0, 0, 0.1);
+      background: rgba(0, 0, 0, 0.15);
       display: none;
-      /* Initially hidden */
     }
 
-    /* Markdown Styling */
-    .markdown-content {
+    .markdown-render {
       max-width: 800px;
       margin: 0 auto;
-      line-height: 1.7;
-      font-size: 16px;
+      line-height: 1.8;
       color: #cbd5e1;
     }
 
-    .markdown-content h1,
-    .markdown-content h2 {
-      font-family: 'Outfit';
-      color: var(--text);
-      margin-top: 1.5em;
+    .markdown-render h1 {
+      font-size: 40px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+      color: #fff;
     }
 
-    .markdown-content code {
-      background: rgba(0, 0, 0, 0.3);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: 'Fira Code', monospace;
+    .markdown-render code {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 7px;
+      border-radius: 5px;
+      font-family: 'JetBrains Mono';
     }
 
-    .markdown-content blockquote {
-      border-left: 4px solid var(--accent);
-      padding-left: 20px;
-      margin: 20px 0;
+    /* Right Dashboard Widgets */
+    .widget-pane {
+      width: 280px;
+      padding: 30px 20px;
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .widget-card {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      padding: 24px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .widget-card h4 {
+      margin: 0 0 15px;
+      font-size: 14px;
       color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
-    /* Toast Notifications */
-    #toast-shelf {
+    #clock {
+      font-size: 42px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono';
+      text-align: center;
+      color: var(--emerald);
+      text-shadow: 0 0 20px var(--emerald-glow);
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+
+    .todo-item input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--emerald);
+    }
+
+    /* Toasts */
+    #os-toast-container {
       position: fixed;
       bottom: 30px;
       right: 30px;
       z-index: 10000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
 
-    .toast {
-      background: #1e293b;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 12px;
+    .os-toast {
+      background: #111827;
       border: 1px solid var(--border);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      padding: 12px 20px;
+      border-radius: 14px;
+      margin-top: 10px;
       display: flex;
       align-items: center;
       gap: 12px;
-      animation: slideUp 0.4s ease-out;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: toastIn 0.3s ease-out;
     }
 
-    @keyframes slideUp {
+    @keyframes toastIn {
       from {
-        transform: translateY(20px);
+        transform: translateX(100%);
         opacity: 0;
       }
 
       to {
-        transform: translateY(0);
+        transform: translateX(0);
         opacity: 1;
       }
-    }
-
-    /* Loading */
-    .shimmer {
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
-
-    @keyframes shimmer {
-      0% {
-        background-position: -200% 0;
-      }
-
-      100% {
-        background-position: 200% 0;
-      }
-    }
-
-    /* Switch View States */
-    .view-section {
-      display: none;
-      flex: 1;
-      height: 100%;
-    }
-
-    .view-section.active {
-      display: flex;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- 1. Login Screen -->
-  <div id="login-overlay">
+  <!-- 1. OS Authentication Layer -->
+  <div id="login-screen">
     <div class="login-card">
-      <i class="ri-brain-line" style="font-size: 50px; color: var(--accent); margin-bottom: 20px; display: block;"></i>
-      <h1>Cognition Pro</h1>
-      <p style="color: var(--text-dim);">連接您的 GitHub 筆記大腦</p>
+      <i class="ri-rocket-2-fill"
+        style="font-size: 60px; color: var(--emerald); display: block; margin-bottom: 20px;"></i>
+      <h1>Cognition OS <span>v3</span></h1>
+      <p style="color: var(--text-dim);">極致本端優先與雲端同步架構</p>
 
       <div class="input-group">
-        <label>GitHub Access Token (PAT)</label>
+        <label>GitHub Access Token</label>
         <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx">
       </div>
       <div class="input-group">
-        <label>儲存庫 (Repository)</label>
+        <label>Repository</label>
         <input type="text" id="gh-repo" value="cloud-notes">
       </div>
 
-      <button class="btn-glow" onclick="Auth.login()">進入系統</button>
-      <p style="font-size: 11px; margin-top: 24px; color: var(--text-dim);">
-        提示：權杖僅儲存在瀏覽器本端 localStorage。
-      </p>
+      <button class="btn-confirm" onclick="Auth.init()">啟動極致作業系統</button>
+      <p style="font-size: 11px; margin-top: 25px; color: var(--text-dim);">提示：系統將自動合併本端與雲端數據，確保筆記永不遺失。</p>
     </div>
   </div>
 
-  <!-- 2. Main Application App -->
-  <div id="app-root">
-    <!-- Sidebar Rail -->
-    <nav class="nav-rail">
-      <div class="nav-icon active" onclick="App.setView('notes')"><i class="ri-sticky-note-2-line"></i></div>
-      <div class="nav-icon" onclick="App.setView('search')"><i class="ri-search-eye-line"></i></div>
-      <div class="nav-icon" onclick="App.setView('settings')"><i class="ri-settings-4-line"></i></div>
-      <div class="nav-icon" style="margin-top: auto; color: #ef4444;" onclick="Auth.logout()"><i
-          class="ri-logout-box-r-line"></i></div>
-    </nav>
+  <!-- 2. Main OS Interface -->
+  <div id="os-root">
+    <aside class="sidebar">
+      <div class="nav-item active"><i class="ri-layout-grid-line"></i></div>
+      <div class="nav-item"><i class="ri-openai-fill" style="color:#10a37f"></i></div>
+      <div class="nav-item"><i class="ri-hard-drive-2-line"></i></div>
+      <div class="nav-item" style="margin-top: auto; color: #ef4444" onclick="Auth.destroy()">
+        <i class="ri-shut-down-line"></i>
+      </div>
+    </aside>
 
-    <!-- Explorer Pane -->
-    <div class="explorer-pane">
-      <div class="explorer-header">
-        <h2>我的筆記</h2>
-        <div class="nav-icon" style="width: 32px; height: 32px; margin: 0;" onclick="App.newNote()">
-          <i class="ri-add-circle-fill"></i>
+    <section class="file-pane">
+      <div class="pane-header">
+        <h2>Workspace</h2>
+        <div class="nav-item" style="width: 32px; height: 32px; margin: 0;" onclick="App.newNote()">
+          <i class="ri-add-line"></i>
         </div>
       </div>
-      <div class="search-box">
-        <i class="ri-search-line"></i>
-        <input type="text" id="file-search" placeholder="搜尋檔名..." oninput="App.filterFiles()">
+      <div class="search-container">
+        <i class="ri-search-2-line"></i>
+        <input type="text" id="file-query" placeholder="Quick search..." oninput="App.filter()">
       </div>
-      <div id="file-list" class="file-list">
-        <!-- Files injected here -->
+      <div id="note-list" class="scroll-list">
+        <!-- Notes will populate here -->
       </div>
-    </div>
+    </section>
 
-    <!-- Main Workspace -->
-    <main class="workspace">
-      <header class="ws-header">
-        <div class="note-title-active" id="active-filename">歡迎使用 Cognition</div>
-        <div class="ws-actions">
-          <button class="btn-action" onclick="App.togglePreview()" id="toggle-preview-btn">
-            <i class="ri-layout-column-line"></i> 預覽模式
-          </button>
-          <button class="btn-action primary" onclick="App.saveCurrent()" id="save-btn">
-            <i class="ri-save-3-line"></i> 儲存筆記
-          </button>
+    <main class="main-stage">
+      <header class="stage-header">
+        <div class="active-title" id="current-fn">Cognition Dashboard</div>
+        <div class="actions-row">
+          <button class="btn-os" onclick="App.togglePreview()"><i class="ri-eye-line"></i> Split View</button>
+          <button class="btn-os primary" onclick="App.save()" id="save-btn"><i class="ri-cloud-fill"></i> Sync
+            Now</button>
         </div>
       </header>
 
-      <div class="editor-container">
-        <div id="monaco-root"></div>
-        <div id="preview-root" class="markdown-content"></div>
+      <div class="workspace-split">
+        <div id="monaco-container"></div>
+        <div id="preview-pane" class="markdown-render"></div>
       </div>
     </main>
+
+    <aside class="widget-pane">
+      <div class="widget-card">
+        <h4>System Time</h4>
+        <div id="clock">00:00:00</div>
+      </div>
+      <div class="widget-card">
+        <h4>Task Registry</h4>
+        <div class="todo-item"><input type="checkbox" checked> 系統架構優化</div>
+        <div class="todo-item"><input type="checkbox" checked> 本端快取層建立</div>
+        <div class="todo-item"><input type="checkbox"> 撰寫深度學習筆記</div>
+      </div>
+      <div class="widget-card" style="margin-top: auto;">
+        <h4>Sync Health</h4>
+        <div style="font-size: 12px; color: var(--emerald); display: flex; align-items: center; gap: 8px;">
+          <span class="status-dot status-sync"></span> 雲端連線穩定
+        </div>
+      </div>
+    </aside>
   </div>
 
-  <!-- 3. Toast Container -->
-  <div id="toast-shelf"></div>
+  <!-- 3. Toast Notifier -->
+  <div id="os-toast-container"></div>
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <script>
-    // --- Core Configuration & State ---
-    const GITHUB_API = 'https://api.github.com';
-    const state = {
-      token: localStorage.getItem('cognition_token'),
-      repo: localStorage.getItem('cognition_repo') || 'cloud-notes',
-      owner: localStorage.getItem('cognition_owner'),
-      notes: [],
-      current: null, // { name, sha, content }
+    // --- Configuration & High Performance State ---
+    const GH_API = 'https://api.github.com';
+    const State = {
+      token: localStorage.getItem('os_token'),
+      repo: localStorage.getItem('os_repo') || 'cloud-notes',
+      owner: localStorage.getItem('os_owner'),
+      notes: [], // All notes from Cloud + Local
+      active: null,
       editor: null,
       isPreview: false
     };
 
+    // --- Database & Integrity Module (The Heart of v3) ---
+    const DB = {
+      // Get combined index of notes (Cloud API + Local Cache)
+      getIndex() {
+        const localIdx = JSON.parse(localStorage.getItem('os_index') || '{}');
+        return localIdx;
+      },
+      saveLocal(name, content) {
+        const localData = JSON.parse(localStorage.getItem('os_cache') || '{}');
+        localData[name] = { content, ts: Date.now(), synced: false };
+        localStorage.setItem('os_cache', JSON.stringify(localData));
+
+        // Update index
+        const idx = this.getIndex();
+        idx[name] = { name, ts: Date.now(), synced: false };
+        localStorage.setItem('os_index', JSON.stringify(idx));
+      },
+      markSynced(name, sha) {
+        const idx = this.getIndex();
+        if (idx[name]) {
+          idx[name].synced = true;
+          idx[name].sha = sha;
+          localStorage.setItem('os_index', JSON.stringify(idx));
+        }
+        // We can optionally clear os_cache content here if we want to save local space
+      }
+    };
+
     // --- Auth Module ---
     const Auth = {
-      async login() {
-        const token = document.getElementById('gh-token').value.trim();
-        const repo = document.getElementById('gh-repo').value.trim();
-        if (!token) return UI.toast('請輸入權杖', 'error');
+      async init() {
+        const t = document.getElementById('gh-token').value.trim();
+        const r = document.getElementById('gh-repo').value.trim();
+        if (!t) return UI.toast('Token required');
 
         try {
-          const res = await fetch(`${GITHUB_API}/user`, {
-            headers: { 'Authorization': `token ${token}` }
-          });
-          if (!res.ok) throw new Error('API 授權失敗');
+          const res = await fetch(`${GH_API}/user`, { headers: { 'Authorization': `token ${t}` } });
+          if (!res.ok) throw new Error('Invalid Token');
           const user = await res.json();
 
-          localStorage.setItem('cognition_token', token);
-          localStorage.setItem('cognition_owner', user.login);
-          localStorage.setItem('cognition_repo', repo);
+          localStorage.setItem('os_token', t);
+          localStorage.setItem('os_owner', user.login);
+          localStorage.setItem('os_repo', r);
           location.reload();
         } catch (e) { UI.toast(e.message, 'error'); }
       },
-      logout() {
-        if (confirm('確定登出？此操作會清除本端快取數據。')) {
+      destroy() {
+        if (confirm('Shutting down. Clear all local data?')) {
           localStorage.clear();
           location.reload();
         }
       }
     };
 
-    // --- App Module ---
+    // --- App Execution Module ---
     const App = {
-      async init() {
-        if (state.token && state.owner) {
-          document.getElementById('login-overlay').style.display = 'none';
-          const app = document.getElementById('app-root');
-          app.style.display = 'flex';
-          setTimeout(() => app.classList.add('active'), 50);
-
+      async startup() {
+        if (State.token && State.owner) {
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('os-root').classList.add('active');
           UI.initEditor();
-          await this.fetchNotes();
+          UI.initClock();
+          await this.refreshContent();
         }
       },
 
-      async fetchNotes() {
+      async refreshContent() {
+        // 1. Get Local Index first for instant display
+        const localIdx = DB.getIndex();
+        State.notes = Object.values(localIdx);
+        this.renderNotes();
+
+        // 2. Fetch Cloud and Merge
         try {
-          // Cache busting prevents the directory from being stale
-          const res = await fetch(`${GITHUB_API}/repos/${state.owner}/${state.repo}/contents?ref=main&t=${Date.now()}`, {
-            headers: { 'Authorization': `token ${state.token}`, 'Cache-Control': 'no-cache' }
+          const res = await fetch(`${GH_API}/repos/${State.owner}/${State.repo}/contents?ref=main&t=${Date.now()}`, {
+            headers: { 'Authorization': `token ${State.token}`, 'Cache-Control': 'no-cache' }
           });
-          if (!res.ok) throw new Error('無法串接 GitHub 儲存庫');
-          const data = await res.json();
-          state.notes = data.filter(f => f.name.endsWith('.md') && f.name !== 'README.md');
-          this.renderFileList();
-        } catch (e) {
-          UI.toast(e.message, 'error');
-        }
+          if (res.ok) {
+            const cloudFiles = await res.json();
+            cloudFiles.filter(f => f.name.endsWith('.md')).forEach(cf => {
+              // Merge logic: If cloud exists, update local metadata
+              const name = cf.name;
+              if (!localIdx[name]) {
+                localIdx[name] = { name, sha: cf.sha, synced: true, ts: 0 };
+              } else {
+                localIdx[name].sha = cf.sha;
+                localIdx[name].synced = true;
+              }
+            });
+            localStorage.setItem('os_index', JSON.stringify(localIdx));
+            State.notes = Object.values(localIdx);
+            this.renderNotes();
+          }
+        } catch (e) { console.warn('Offline mode or API lag'); }
       },
 
-      renderFileList() {
-        const listEl = document.getElementById('file-list');
-        listEl.innerHTML = '';
-
-        state.notes.sort((a, b) => a.name.localeCompare(b.name)).forEach(note => {
+      renderNotes() {
+        const list = document.getElementById('note-list');
+        list.innerHTML = '';
+        State.notes.sort((a, b) => b.ts - a.ts).forEach(note => {
           const div = document.createElement('div');
-          div.className = `file-item ${state.current?.name === note.name ? 'active' : ''}`;
-          div.innerHTML = `<i class="ri-markdown-line"></i> <span>${note.name.replace('.md', '')}</span>`;
-          div.onclick = () => this.loadNote(note);
-          listEl.appendChild(div);
+          div.className = `note-item ${State.active?.name === note.name ? 'active' : ''}`;
+          div.innerHTML = `
+                        <i class="ri-markdown-fill"></i>
+                        <div class="info">
+                            <span class="name">${note.name.replace('.md', '')}</span>
+                            <span class="meta">
+                                <span class="status-dot ${note.synced ? 'status-sync' : 'status-local'}"></span>
+                                ${note.synced ? 'Cloud' : 'Local Only'}
+                            </span>
+                        </div>
+                    `;
+          div.onclick = () => this.openNote(note);
+          list.appendChild(div);
         });
       },
 
-      async loadNote(note) {
-        state.current = note;
-        this.renderFileList();
-        document.getElementById('active-filename').innerText = note.name.replace('.md', '');
+      async openNote(note) {
+        State.active = note;
+        this.renderNotes();
+        document.getElementById('current-fn').innerText = note.name.replace('.md', '');
 
-        // Show loading shimmer in editor theoretically
-        try {
-          const res = await fetch(note.url, { headers: { 'Authorization': `token ${state.token}` } });
-          const data = await res.json();
-          state.current.sha = data.sha;
-          const decoded = Utils.decodeBase64(data.content);
-          state.editor.setValue(decoded);
-          if (state.isPreview) this.updatePreview();
-        } catch (e) { UI.toast('讀取失敗', 'error'); }
+        // Try Local Cache first
+        const localCache = JSON.parse(localStorage.getItem('os_cache') || '{}');
+        if (localCache[note.name]) {
+          State.editor.setValue(localCache[note.name].content);
+          UI.toast('已加載本端快取內容');
+        } else {
+          // Fetch Cloud
+          try {
+            const res = await fetch(`${GH_API}/repos/${State.owner}/${State.repo}/contents/${note.name}`, {
+              headers: { 'Authorization': `token ${State.token}` }
+            });
+            const data = await res.json();
+            State.active.sha = data.sha;
+            const content = Utils.atobUTF8(data.content);
+            State.editor.setValue(content);
+          } catch (e) { UI.toast('讀取雲端失敗', 'error'); }
+        }
+        if (State.isPreview) this.updatePreview();
       },
 
-      async saveCurrent() {
-        if (!state.current) return UI.toast('請先選擇或建立一個筆記', 'error');
+      async save() {
+        if (!State.active) return UI.toast('No active note');
+        const content = State.editor.getValue();
+        const name = State.active.name;
 
+        // 1. SAVE LOCALLY IMMEDIATELY (Safety first!)
+        DB.saveLocal(name, content);
+        State.active.synced = false;
+        this.renderNotes();
+        UI.toast('已存入本端快取，正在同步至雲端...');
+
+        // 2. SYNC TO CLOUD BACKGROUND
         const btn = document.getElementById('save-btn');
-        btn.innerHTML = `<i class="ri-loader-4-line"></i> 正在上傳...`;
-        btn.disabled = true;
-
-        const content = state.editor.getValue();
-        const b64 = Utils.encodeBase64(content);
-        const path = state.current.name;
-
-        const body = {
-          message: `Cognition Update: ${path}`,
-          content: b64,
-          sha: state.current.sha || null,
-          branch: 'main'
-        };
+        btn.classList.add('shimmer');
 
         try {
-          const res = await fetch(`${GITHUB_API}/repos/${state.owner}/${state.repo}/contents/${path}`, {
+          const body = {
+            message: `OS Sync: ${name}`,
+            content: Utils.btoaUTF8(content),
+            sha: State.active.sha || null,
+            branch: 'main'
+          };
+          const res = await fetch(`${GH_API}/repos/${State.owner}/${State.repo}/contents/${name}`, {
             method: 'PUT',
-            headers: { 'Authorization': `token ${state.token}`, 'Content-Type': 'application/json' },
+            headers: { 'Authorization': `token ${State.token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
           });
 
           if (res.ok) {
             const result = await res.json();
-            state.current.sha = result.content.sha;
-            UI.toast('儲存完成', 'success');
-
-            // --- Optimistic UI Update ---
-            // Instead of refetching the whole list immediately (which might lag),
-            // we update the local SHA for the current item.
-            const index = state.notes.findIndex(n => n.name === path);
-            if (index === -1) {
-              state.notes.push(result.content);
-              this.renderFileList();
-            } else {
-              state.notes[index].sha = result.content.sha;
-            }
+            DB.markSynced(name, result.content.sha);
+            State.active.sha = result.content.sha;
+            State.active.synced = true;
+            this.renderNotes();
+            UI.toast('雲端同步完成！', 'success');
           } else {
-            const err = await res.json();
-            throw new Error(err.message || '儲存失敗');
+            throw new Error('Sync failed');
           }
-        } catch (e) { UI.toast(e.message, 'error'); }
-        finally {
-          btn.innerHTML = `<i class="ri-save-3-line"></i> 儲存筆記`;
-          btn.disabled = false;
+        } catch (e) {
+          UI.toast('雲端同步失敗，數據已安全存在本端。', 'error');
+        } finally {
+          btn.classList.remove('shimmer');
         }
       },
 
-      async newNote() {
-        const name = prompt('筆記名稱：');
+      newNote() {
+        const name = prompt('New Filename:');
         if (!name) return;
-        const filename = name.endsWith('.md') ? name : name + '.md';
+        const fn = name.endsWith('.md') ? name : name + '.md';
+        const initial = `# ${name}\n\nStart your thoughts...`;
 
-        // Set state and open editor
-        state.current = { name: filename, isNew: true };
-        document.getElementById('active-filename').innerText = name;
-        state.editor.setValue(`# ${name}\n\n在這裡開始寫作您的靈感...`);
+        // Immediate Local Save
+        DB.saveLocal(fn, initial);
 
-        // Add to list optimistically so it's VISIBLE IMMEDIATELY
-        if (!state.notes.find(n => n.name === filename)) {
-          state.notes.push({ name: filename });
-          this.renderFileList();
-        }
-        UI.toast('已建立暫存筆記，請記得按下儲存', 'success');
+        const newNoteObj = { name: fn, ts: Date.now(), synced: false };
+        State.active = newNoteObj;
+        State.notes.push(newNoteObj);
+
+        this.renderNotes();
+        this.openNote(newNoteObj);
+        UI.toast('New local note created.');
       },
 
       togglePreview() {
-        state.isPreview = !state.isPreview;
-        const prev = document.getElementById('preview-root');
-        const btn = document.getElementById('toggle-preview-btn');
-
-        if (state.isPreview) {
-          prev.style.display = 'block';
-          btn.innerHTML = `<i class="ri-edit-line"></i> 編輯模式`;
-          this.updatePreview();
-        } else {
-          prev.style.display = 'none';
-          btn.innerHTML = `<i class="ri-layout-column-line"></i> 預覽模式`;
-        }
+        State.isPreview = !State.isPreview;
+        document.getElementById('preview-pane').style.display = State.isPreview ? 'block' : 'none';
+        if (State.isPreview) this.updatePreview();
       },
 
       updatePreview() {
-        const content = state.editor.getValue();
-        document.getElementById('preview-root').innerHTML = marked.parse(content);
+        const md = State.editor.getValue();
+        document.getElementById('preview-pane').innerHTML = `<div class="markdown-render">${marked.parse(md)}</div>`;
       },
 
-      filterFiles() {
-        const q = document.getElementById('file-search').value.toLowerCase();
-        const items = document.querySelectorAll('.file-item');
-        items.forEach(it => {
-          const text = it.innerText.toLowerCase();
-          it.style.display = text.includes(q) ? 'flex' : 'none';
+      filter() {
+        const q = document.getElementById('file-query').value.toLowerCase();
+        document.querySelectorAll('.note-item').forEach(it => {
+          const matches = it.innerText.toLowerCase().includes(q);
+          it.style.display = matches ? 'flex' : 'none';
         });
       }
     };
 
-    // --- UI Utils ---
+    // --- OS UI Subsystem ---
     const UI = {
       toast(msg, type = 'success') {
-        const shelf = document.getElementById('toast-shelf');
+        const box = document.getElementById('os-toast-container');
         const t = document.createElement('div');
-        t.className = 'toast';
+        t.className = 'os-toast';
         const icon = type === 'success' ? 'ri-checkbox-circle-fill' : 'ri-error-warning-fill';
-        const color = type === 'success' ? '#10b981' : '#ef4444';
+        const color = type === 'success' ? '#10b981' : '#f59e0b';
         t.innerHTML = `<i class="${icon}" style="color:${color}"></i> ${msg}`;
-        shelf.appendChild(t);
-        setTimeout(() => {
-          t.style.opacity = '0';
-          t.style.transform = 'translateY(10px)';
-          setTimeout(() => t.remove(), 400);
-        }, 3000);
+        box.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3000);
       },
-
       initEditor() {
         require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
         require(['vs/editor/editor.main'], () => {
-          state.editor = monaco.editor.create(document.getElementById('monaco-root'), {
-            value: '# 開始筆記之旅\n\n點擊左側筆記開始編輯，或點擊 ' + ' 建立新筆記。',
-            language: 'markdown',
-            theme: 'vs-dark',
-            automaticLayout: true,
-            fontSize: 16,
-            fontFamily: "'Fira Code', 'Inter', monospace",
-            minimap: { enabled: false },
-            padding: { top: 40 },
-            wordWrap: 'on',
-            lineNumbers: 'off',
-            scrollbar: { verticalScrollbarSize: 0 }
+          State.editor = monaco.editor.create(document.getElementById('monaco-container'), {
+            value: '-- Welcome to Cognition OS v3 --\n\nYour premium notes are unified across local and cloud.',
+            language: 'markdown', theme: 'vs-dark', automaticLayout: true,
+            fontSize: 16, fontFamily: 'JetBrains Mono', minimap: { enabled: false },
+            padding: { top: 40 }, wordWrap: 'on'
           });
-
-          state.editor.onDidChangeModelContent(() => {
-            if (state.isPreview) App.updatePreview();
-          });
+          State.editor.onDidChangeModelContent(() => { if (State.isPreview) App.updatePreview(); });
         });
-      }
-    };
-
-    // --- Utils ---
-    const Utils = {
-      decodeBase64(str) {
-        return new TextDecoder().decode(Uint8Array.from(atob(str), c => c.charCodeAt(0)));
       },
-      encodeBase64(str) {
-        return btoa(new TextEncoder().encode(str).reduce((d, b) => d + String.fromCharCode(b), ''));
+      initClock() {
+        setInterval(() => {
+          const now = new Date();
+          document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
+        }, 1000);
       }
     };
 
-    // Entry
-    App.init();
+    const Utils = {
+      atobUTF8(str) { return new TextDecoder().decode(Uint8Array.from(atob(str), c => c.charCodeAt(0))); },
+      btoaUTF8(str) { return btoa(new TextEncoder().encode(str).reduce((d, b) => d + String.fromCharCode(b), '')); }
+    };
+
+    App.startup();
   </script>
 </body>
 
