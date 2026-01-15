@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write # Needed to commit summaries back
+  contents: write
   pages: write
   id-token: write
 
@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # To see changes if we wanted to limit scope
+          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -37,20 +37,8 @@ jobs:
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
         run: |
+          # Run summary generation (updates files in the runner only)
           python scripts/ai_summary.py .
-
-      - name: Commit AI Changes
-        run: |
-          git config --global user.name 'AI Assistant'
-          git config --global user.email 'ai-bot@users.noreply.github.com'
-          # Check for changes
-          if [[ -n $(git status -s) ]]; then
-            git add .
-            git commit -m "docs: auto-generated AI summaries [skip ci]"
-            git push
-          else
-            echo "No changes to commit."
-          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
